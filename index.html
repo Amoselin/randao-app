@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>燃道 Rendao | 仁 - 冥想體驗</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#ffffff">
+    
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    
+    <style>
+        /* --- 設計師風格定義 --- */
+        :root {
+            --bg-color: #ffffff;
+            --primary-text: #2c2c2c;
+            --secondary-text: #8a8a8a;
+            --line-color: #e0e0e0;
+            --accent-color: #6b6b6b; /* 更深一點的灰，提升質感 */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--primary-text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            /* 防止手機橡皮筋滾動效果 */
+            overscroll-behavior: none; 
+        }
+
+        #app {
+            width: 85%;
+            max-width
