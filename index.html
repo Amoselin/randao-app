@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>燃道 Rendao | 極致修煉系統</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <style>
+        /* --- 品牌視覺定義 --- */
+        :root {
+            --paper: #f9f7f2;
+            --ink: #1a1a1a;
+            --seal-red: #a62c2b;
+            --transition-slow: 2.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            margin: 0; background-color: var(--paper); color: var(--ink);
+            font-family: "Noto Serif TC", serif; overflow: hidden;
+            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+        }
+
+        /* --- 墨跡濾鏡 (A概念：隨等級進化) --- */
+        .ink-filter { position: absolute; width: 0; height: 0; }
+
+        #app { width: 100%; max-width: 400px; text-align: center; z-index: 10; }
+
+        /* --- 3-7-5 動態容器 --- */
+        .zen-container {
+            position: relative; width: 320px; height: 320px; margin: 0 auto;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        /* 核心圓環：根據等級套用不同濾鏡 */
+        .main-circle {
+            position: absolute; border: 1.5px solid var(--ink); border-radius: 50%;
+            transition: var(--transition-slow);
+            filter: url(#ink-bleed); /* 預設帶有微弱墨暈 */
+        }
+
+        .breathing { animation: zen-breathe 8s infinite ease-in-out; }
+
+        @keyframes zen-breathe {
+            0%, 100% { transform: scale(0.85); opacity: 0.4; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        /* --- 文字資訊 --- */
+        .info-panel { margin-top: 60px; transition: opacity 1s; }
+        .stage-hint { font-size: 0.75rem; letter-spacing: 6px; color: #999; margin-bottom: 10px; }
+        .timer { font-size: 3.8rem; font-weight: 200; letter-spacing: -2px; }
+        .level-badge { font-size: 0.7rem; border: 0.5px solid #ccc; padding: 2px 10px; border-radius: 20px; color: #888; }
+
+        /* --- 高級按鈕 --- */
+        .btn-start {
+            margin-top: 40px; background: none; border: none; font-size: 0.9rem;
+            letter-spacing: 5px; cursor: pointer; color: var(--ink);
+            position: relative; padding-bottom: 10px;
+        }
+        .btn-start::after {
+            content: ''; position: absolute; bottom: 0; left: 25%; width: 50%;
+            height: 0.5px; background: var(--ink); transition: 0.5s;
+        }
+        .btn-start:hover::after { width: 100%; left: 0; }
+
+        /* --- 數位印記彈窗 (D概念) --- */
+        .modal {
+            position: fixed; inset: 0; background: var(--paper); z-index: 100;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            animation: fadeIn 2s forwards;
+        }
+
+        #sealCanvas { 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
+            cursor: pointer; transition: transform 0.3s;
+        }
+        #sealCanvas:active { transform: scale(0.95); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<svg class="ink-filter">
+  <defs>
+    <filter id="ink-bleed">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" />
+    </filter>
+  </defs>
+</svg>
+
+<div id="app">
+    <div class="level-badge">{{ userLevelName }}</div>
+    
+    <div class="zen-container">
+        <div class="main-circle" :style="circleStyle" :class="{ breathing: isPlaying }"></div>
+        <div class="main-circle" :style="innerCircleStyle" :class="{ breathing: isPlaying }" style="animation-delay: -4s;"></div>
+        
+        <div style="z-index: 5;">
+            <div class="timer">{{ formatTime(timer) }}</div>
+        </div>
+    </div>
+
+    <div class="info-panel" :style="{ opacity: isPlaying ? 0.3 : 1 }">
+        <div class="stage-hint">{{ currentStageLabel }}</div>
+        <h2 style="font-weight: 300; letter-spacing: 8px;">仁</h2>
+        <button class="btn-start" @click="togglePlay">{{ isPlaying ? '暫停' : '開啟觀想' }}</button>
+    </div>
+
+    <div v-if="showSeal" class="modal">
+        <div style="margin-bottom: 40px; letter-spacing: 10px; font-size: 0.8rem;">觀想圓滿</div>
+        <canvas id="sealCanvas" width="300" height="300"></canvas>
+        <p style="margin-top: 30px; color: #888; font-size: 0.75rem;">長按印記．典藏修行紀錄</p>
+        <button class="btn-start" @click="closeSeal">重回本心</button>
+    </div>
+
+    <audio ref="audioPlayer" src="music-ren.mp3" loop playsinline></audio>
+</div>
+
+<script>
+    const { createApp, ref, computed, onMounted } = Vue;
+
+    createApp({
+        setup() {
+            const isPlaying = ref(false);
+            const timer = ref(900);
+            const sessions = ref(Number(localStorage.getItem('rd_count') || 0));
+            const showSeal = ref(false);
+            const audioPlayer = ref(null);
+            let interval = null;
+
+            // A概念：成長邏輯
+            const userLevelName = computed(() => {
+                if (sessions.value < 7) return '初發心';
+                if (sessions.value < 21) return '行深層';
+                return '入道位';
+            });
+
+            // C概念：3-7-5 視覺
+            const currentStageLabel = computed(() => {
+                if (timer.value > 720) return '第一階段：調息引導';
+                if (timer.value > 300) return '第二階段：核心觀想';
+                return '第三階段：收攝定境';
+            });
+
+            const circleStyle = computed(() => {
+                const scale = timer.value > 300 ? 1 : 0.7;
+                const bleed = sessions.value * 2; // 等級越高，墨暈越重
+                return {
+                    width: '280px', height: '280px',
+                    filter: `url(#ink-bleed) blur(${timer.value < 300 ? 2 : 0}px)`,
+                    borderColor: `rgba(26, 26, 26, ${isPlaying.value ? 0.8 : 0.2})`
+                };
+            });
+
+            const innerCircleStyle = computed(() => ({
+                width: '240px', height: '240px',
+                opacity: sessions.value > 5 ? 0.3 : 0,
+                borderStyle: sessions.value > 20 ? 'double' : 'solid'
+            }));
+
+            const formatTime = (s) => `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
+
+            const togglePlay = () => {
+                if (isPlaying.value) {
+                    clearInterval(interval);
+                    audioPlayer.value.pause();
+                } else {
+                    audioPlayer.value.play();
+                    interval = setInterval(() => {
+                        if (timer.value > 0) timer.value--;
+                        else finish();
+                    }, 1000);
+                }
+                isPlaying.value = !isPlaying.value;
+            };
+
+            const finish = () => {
+                clearInterval(interval);
+                isPlaying.value = false;
+                sessions.value++;
+                localStorage.setItem('rd_count', sessions.value);
+                showSeal.value = true;
+                setTimeout(drawSeal, 100);
+            };
+
+            // D概念：極致印記生成 (模擬石刻質感)
+            const drawSeal = () => {
+                const canvas = document.getElementById('sealCanvas');
+                const ctx = canvas.getContext('2d');
+                
+                // 1. 背景紙張感
+                ctx.fillStyle = "#fff"; ctx.fillRect(0,0,300,300);
+                
+                // 2. 邊框 (帶有隨機殘損)
+                ctx.strokeStyle = "#a62c2b"; ctx.lineWidth = 10;
+                ctx.beginPath();
+                for(let i=0; i<400; i+=10) { // 隨機抖動線條
+                    const x = i < 100 ? 20 + i : (i < 200 ? 120 : (i < 300 ? 320 - i : 20));
+                    // 這裡簡化邏輯，實際開發會用更複雜的邊緣算法
+                }
+                ctx.strokeRect(30, 30, 240, 240);
+
+                // 3. 核心文字 (仁)
+                ctx.fillStyle = "#a62c2b";
+                ctx.font = "bold 140px 'Noto Serif TC', serif";
+                ctx.textAlign = "center";
+                ctx.fillText("仁", 150, 185);
+
+                // 4. 底部小字
+                ctx.font = "16px serif";
+                ctx.fillText(`燃道 · 第 ${sessions.value} 回`, 150, 245);
+
+                // 5. 關鍵：模擬「印泥不均」與「石損」
+                ctx.globalCompositeOperation = 'destination-out';
+                for(let i=0; i<500; i++) {
+                    ctx.beginPath();
+                    ctx.arc(Math.random()*300, Math.random()*300, Math.random()*1.5, 0, Math.PI*2);
+                    ctx.fill();
+                }
+            };
+
+            const closeSeal = () => {
+                showSeal.value = false;
+                timer.value = 900;
+            };
+
+            return { isPlaying, timer, sessions, userLevelName, currentStageLabel, 
+                     circleStyle, innerCircleStyle, formatTime, togglePlay, showSeal, closeSeal, audioPlayer };
+        }
+    }).mount('#app');
+</script>
+
+</body>
+</html>
