@@ -3,140 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>燃道 Rendao | 仁</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@200;400;900&display=swap" rel="stylesheet">
+    <title>燃道 Rendao</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@200;400;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <style>
         :root {
-            --paper: #f9f7f2;
+            --paper: #f8f6f2;
             --ink: #1a1a1a;
             --seal-red: #a62c2b;
-            --transition: 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            --soft-shadow: rgba(0,0,0,0.03);
         }
 
-        body {
-            margin: 0; background-color: var(--paper); color: var(--ink);
-            font-family: "Noto Serif TC", serif; overflow: hidden;
-            display: flex; justify-content: center; align-items: center; min-height: 100vh;
-            -webkit-user-select: none; /* 防止誤觸選取文字 */
-        }
+        body, html { margin: 0; padding: 0; height: 100%; background: var(--paper); font-family: "Noto Serif TC", serif; overflow: hidden; }
 
-        #app { width: 100%; max-width: 400px; text-align: center; padding-bottom: 50px; }
+        #app { height: 100%; display: flex; flex-direction: column; }
 
-        /* --- 狀態提示 --- */
-        .status-bar {
-            position: fixed; top: 30px; left: 0; width: 100%; 
-            display: flex; justify-content: space-between; padding: 0 30px; box-sizing: border-box;
-            font-size: 0.65rem; letter-spacing: 2px; color: #bbb;
-        }
-        .active-red { color: var(--seal-red); }
-
-        /* --- 視覺核心 (C概念) --- */
-        .zen-stage {
-            position: relative; width: 300px; height: 300px; margin: 0 auto 40px;
-            display: flex; justify-content: center; align-items: center;
-        }
-        .ring {
-            position: absolute; inset: 0; border: 0.5px solid var(--ink);
-            border-radius: 50%; opacity: 0.15; transition: var(--transition);
-        }
-        .ring.breathing { animation: zen-breathe 8s infinite ease-in-out; opacity: 0.5; }
+        /* --- 頁面一：上下分開的選擇器 --- */
+        .selection-screen { height: 100%; display: flex; flex-direction: column; cursor: pointer; }
         
-        @keyframes zen-breathe {
-            0%, 100% { transform: scale(0.88); opacity: 0.3; }
-            50% { transform: scale(1.05); opacity: 0.6; }
+        .choice-box {
+            flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden;
         }
+        
+        .choice-box:first-child { border-bottom: 0.5px solid rgba(0,0,0,0.05); }
+        .choice-box:active { background: #f0ede6; }
 
-        .timer-display { font-size: 3.5rem; font-weight: 200; letter-spacing: -2px; z-index: 10; }
+        .choice-title { font-size: 1.2rem; letter-spacing: 12px; font-weight: 300; z-index: 10; margin-bottom: 10px; }
+        .choice-sub { font-size: 0.7rem; letter-spacing: 4px; color: #999; z-index: 10; }
 
-        /* --- 模式選擇器 --- */
-        .selector {
-            display: flex; justify-content: center; gap: 30px; margin-bottom: 40px;
-            transition: opacity 0.8s;
-        }
-        .opt {
-            font-size: 0.8rem; letter-spacing: 4px; color: #ccc; cursor: pointer;
-            padding-bottom: 4px; border-bottom: 1px solid transparent; transition: 0.4s;
-        }
-        .opt.active { color: var(--ink); border-bottom: 1px solid var(--ink); }
-
-        /* --- 啟動按鈕 --- */
-        .btn-main {
-            background: none; border: 0.5px solid var(--ink); padding: 12px 40px;
-            font-size: 0.9rem; letter-spacing: 8px; cursor: pointer;
-            transition: all 0.5s; position: relative;
-        }
-        .btn-main:hover { background: var(--ink); color: white; }
-
-        /* --- 數位印記 Modal (D概念) --- */
-        .modal {
-            position: fixed; inset: 0; background: var(--paper); z-index: 100;
+        /* --- 頁面二：倒數計時主畫面 --- */
+        .meditation-screen {
+            position: fixed; inset: 0; background: var(--paper);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; transition: opacity 1.5s ease;
         }
-        #sealCanvas { box-shadow: 0 10px 40px rgba(0,0,0,0.05); cursor: pointer; }
 
-        .hidden { opacity: 0; pointer-events: none; }
+        /* Pinterest 風格的液態動態元件 */
+        .blob-container { position: relative; width: 320px; height: 320px; display: flex; justify-content: center; align-items: center; }
+        
+        .blob {
+            position: absolute; width: 280px; height: 280px;
+            fill: var(--ink); opacity: 0.04;
+            animation: blob-swing 15s infinite alternate ease-in-out;
+        }
+        
+        .timer-text { font-size: 4rem; font-weight: 200; letter-spacing: -2px; z-index: 10; opacity: 0.8; }
+
+        @keyframes blob-swing {
+            0% { d: path("M44.7,-76.4C58.2,-69.2,69.7,-57.4,77.3,-43.7C84.8,-30,88.4,-15,86.6,-0.9C84.9,13.1,77.8,26.2,69.5,38.6C61.3,51.1,51.9,62.9,39.9,70.8C27.9,78.8,13.9,82.8,-0.2,83.1C-14.3,83.4,-28.6,80,-41.8,72.9C-55,65.8,-67.1,55,-75.1,41.9C-83.1,28.8,-87.1,13.4,-86.3,0.5C-85.5,-12.4,-79.8,-24.8,-71.8,-36.8C-63.8,-48.8,-53.4,-60.4,-41,-68.2C-28.5,-76,-14.2,-80,0.9,-81.6C16.1,-83.1,31.2,-83.5,44.7,-76.4Z"); }
+            50% { d: path("M41.5,-72.2C53.2,-65.4,61.8,-52,68.7,-38.4C75.6,-24.8,80.7,-11,79.8,2.3C78.9,15.7,72.1,28.6,63,39.8C53.9,51,42.5,60.5,29.9,67.6C17.3,74.7,3.6,79.5,-11.1,78.3C-25.9,77.1,-41.6,70,-53.6,59.8C-65.7,49.6,-74.1,36.4,-78.9,21.9C-83.6,7.5,-84.8,-8.3,-79.5,-22.1C-74.1,-35.8,-62.3,-47.4,-49.2,-53.8C-36.1,-60.2,-21.8,-61.4,-7.8,-70.6C6.1,-79.8,29.7,-79,41.5,-72.2Z"); }
+            100% { d: path("M36.1,-63.5C46.8,-56.3,55.5,-45.5,62.2,-33.6C68.9,-21.6,73.6,-8.6,72.6,4.1C71.6,16.8,64.9,29.1,56.1,39.7C47.2,50.3,36.2,59.2,23.6,65.1C11,71,-3.2,74,-17.1,71.8C-31,69.5,-44.6,62.2,-55.3,52C-66,41.8,-73.8,28.8,-77.7,14.7C-81.5,0.6,-81.5,-14.6,-75.6,-28.1C-69.8,-41.6,-58.2,-53.3,-45,-59.6C-31.8,-65.9,-17,-66.8,-1.7,-64.1C13.6,-61.4,25.3,-70.6,36.1,-63.5Z"); }
+        }
+
+        /* --- 數位印記 Modal --- */
+        .modal { position: fixed; inset: 0; background: var(--paper); z-index: 200; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #sealCanvas { box-shadow: 0 10px 40px var(--soft-shadow); border: 0.5px solid #eee; }
+
+        .btn-stop { margin-top: 40px; background: none; border: 0.5px solid var(--ink); padding: 10px 30px; letter-spacing: 4px; font-size: 0.7rem; cursor: pointer; opacity: 0.3; transition: 0.5s; }
+        .btn-stop:hover { opacity: 1; }
+        
+        /* 動畫過渡 */
+        .fade-enter-active, .fade-leave-active { transition: opacity 1.5s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <div class="status-bar">
-        <div>{{ levelName }}．第 {{ sessions }} 回</div>
-        <div :class="{ 'active-red': isWakeLockActive }">
-            {{ isWakeLockActive ? '● 長明中' : '○ 待命' }}
+    <div v-if="view === 'selection'" class="selection-screen">
+        <div class="choice-box" @click="startMeditation('voice')">
+            <div class="choice-title">導引冥想</div>
+            <div class="choice-sub">G U I D E D</div>
+        </div>
+        <div class="choice-box" @click="startMeditation('pure')">
+            <div class="choice-title">純境音樂</div>
+            <div class="choice-sub">P U R E</div>
         </div>
     </div>
 
-    <div class="zen-stage">
-        <div class="ring" :class="{ breathing: isPlaying }" :style="ringStyle"></div>
-        <div class="timer-display">{{ formatTime(timer) }}</div>
-    </div>
+    <transition name="fade">
+        <div v-if="view === 'active'" class="meditation-screen">
+            <div style="position: absolute; top: 40px; font-size: 0.7rem; letter-spacing: 5px; color: #bbb;">
+                {{ levelName }}．第 {{ sessions }} 回
+            </div>
 
-    <div :class="{ hidden: isPlaying && timer < 895 }">
-        <div class="selector">
-            <div class="opt" :class="{ active: mode === 'voice' }" @click="mode = 'voice'">導引</div>
-            <div class="opt" :class="{ active: mode === 'pure' }" @click="mode = 'pure'">純境</div>
+            <div class="blob-container">
+                <svg viewBox="-100 -100 200 200" xmlns="http://www.w3.org/2000/svg" class="blob">
+                    <path d="" />
+                </svg>
+                <div class="timer-text">{{ formatTime(timer) }}</div>
+            </div>
+
+            <div style="margin-top: 20px; font-size: 0.8rem; letter-spacing: 10px; font-weight: 300;">仁</div>
+            
+            <button class="btn-stop" @click="confirmExit">暫停結束</button>
         </div>
-
-        <h2 style="font-weight: 300; letter-spacing: 12px; margin-bottom: 40px;">仁</h2>
-        
-        <button class="btn-main" @click="togglePlay">
-            {{ isPlaying ? '靜候' : '啟動燃道' }}
-        </button>
-    </div>
+    </transition>
 
     <div v-if="showSeal" class="modal">
-        <div style="letter-spacing: 10px; font-size: 0.8rem; margin-bottom: 40px; color: #888;">觀想圓滿</div>
+        <div style="letter-spacing: 10px; font-size: 0.8rem; margin-bottom: 30px; color: #888;">觀想圓滿</div>
         <canvas id="sealCanvas" width="300" height="300"></canvas>
-        <p style="margin-top: 30px; font-size: 0.7rem; color: #bbb; letter-spacing: 2px;">長按印記．典藏修行</p>
-        <button class="btn-main" style="margin-top: 30px;" @click="closeSeal">重回本心</button>
+        <button class="btn-stop" style="opacity: 1; margin-top: 30px;" @click="reset">重回本心</button>
     </div>
 
-    <audio ref="audioPlayer" :src="currentAudioUrl" loop playsinline></audio>
+    <audio ref="audioPlayer" :src="audioUrl" loop playsinline></audio>
 </div>
 
 <script>
-    const { createApp, ref, computed, watch, onMounted } = Vue;
+    const { createApp, ref, computed, onUnmounted } = Vue;
 
     createApp({
         setup() {
+            const view = ref('selection');
+            const timer = ref(900);
             const isPlaying = ref(false);
-            const timer = ref(900); // 15分鐘
-            const mode = ref(localStorage.getItem('rd_mode') || 'pure');
             const sessions = ref(Number(localStorage.getItem('rd_count') || 0));
+            const mode = ref('pure');
             const showSeal = ref(false);
-            const isWakeLockActive = ref(false);
             const audioPlayer = ref(null);
             let wakeLock = null;
             let interval = null;
 
-            // --- 音訊網址設定 ---
-            const currentAudioUrl = computed(() => {
-                // 如果之後有導引版，請將網址貼在下方引號內
-                const voiceUrl = 'https://slbktbschxdrliypfmos.supabase.co/storage/v1/object/public/meditation-assets/music-ren-pure.mp3'; 
-                const pureUrl = 'https://slbktbschxdrliypfmos.supabase.co/storage/v1/object/public/meditation-assets/music-ren-pure.mp3';
-                return mode.value === 'voice' ? voiceUrl : pureUrl;
+            const audioUrl = computed(() => {
+                // 目前暫時都指向同一個網址，未來有導引版再更換 voiceUrl
+                const url = 'https://slbktbschxdrliypfmos.supabase.co/storage/v1/object/public/meditation-assets/music-ren-pure.mp3';
+                return url;
             });
 
             const levelName = computed(() => {
@@ -145,42 +137,26 @@
                 return '入道位';
             });
 
-            // 圓環隨階段縮放
-            const ringStyle = computed(() => {
-                let size = 280;
-                if (timer.value <= 300) size = 180; // 最後5分鐘縮小
-                return { width: size + 'px', height: size + 'px' };
-            });
-
-            watch(mode, (val) => localStorage.setItem('rd_mode', val));
-
-            const formatTime = (s) => `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
-
-            // --- 螢幕恆亮控制 ---
-            const requestWakeLock = async () => {
-                if ('wakeLock' in navigator) {
-                    try {
-                        wakeLock = await navigator.wakeLock.request('screen');
-                        isWakeLockActive.value = true;
-                        wakeLock.addEventListener('release', () => isWakeLockActive.value = false);
-                    } catch (e) { console.error("WakeLock failed"); }
-                }
-            };
-
-            const togglePlay = async () => {
-                if (isPlaying.value) {
-                    clearInterval(interval);
-                    audioPlayer.value.pause();
-                    if (wakeLock) await wakeLock.release();
-                } else {
+            const startMeditation = async (selectedMode) => {
+                mode.value = selectedMode;
+                view.value = 'active';
+                isPlaying.value = true;
+                
+                // 啟動音訊與防鎖屏
+                setTimeout(() => {
                     audioPlayer.value.play();
-                    await requestWakeLock();
+                    requestWakeLock();
                     interval = setInterval(() => {
                         if (timer.value > 0) timer.value--;
                         else handleFinish();
                     }, 1000);
+                }, 1000);
+            };
+
+            const requestWakeLock = async () => {
+                if ('wakeLock' in navigator) {
+                    try { wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
                 }
-                isPlaying.value = !isPlaying.value;
             };
 
             const handleFinish = () => {
@@ -195,25 +171,16 @@
             const drawSeal = () => {
                 const canvas = document.getElementById('sealCanvas');
                 const ctx = canvas.getContext('2d');
-                const date = new Date().toLocaleDateString();
-                
-                // 背景
                 ctx.fillStyle = "white"; ctx.fillRect(0,0,300,300);
-                // 邊框
                 ctx.strokeStyle = "#a62c2b"; ctx.lineWidth = 8;
                 ctx.strokeRect(35, 35, 230, 230);
-                // 文字
                 ctx.fillStyle = "#a62c2b";
                 ctx.font = "bold 120px 'Noto Serif TC'";
                 ctx.textAlign = "center";
                 ctx.fillText("仁", 150, 180);
-                // 細項
                 ctx.font = "14px 'Noto Serif TC'";
                 ctx.fillText(`燃道．第 ${sessions.value} 回`, 150, 230);
-                ctx.font = "10px serif";
-                ctx.fillText(date, 150, 250);
-
-                // 隨機殘損效果 (D概念精髓)
+                
                 ctx.globalCompositeOperation = 'destination-out';
                 for(let i=0; i<300; i++){
                     ctx.beginPath();
@@ -222,12 +189,23 @@
                 }
             };
 
-            const closeSeal = () => {
-                showSeal.value = false;
-                timer.value = 900;
+            const confirmExit = () => {
+                if(confirm("確定要結束這次修煉嗎？")) reset();
             };
 
-            return { isPlaying, timer, mode, sessions, levelName, isWakeLockActive, currentAudioUrl, ringStyle, formatTime, togglePlay, showSeal, closeSeal, audioPlayer };
+            const reset = () => {
+                clearInterval(interval);
+                if (wakeLock) wakeLock.release();
+                view.value = 'selection';
+                showSeal.value = false;
+                timer.value = 900;
+                audioPlayer.value.pause();
+                audioPlayer.value.currentTime = 0;
+            };
+
+            const formatTime = (s) => `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
+
+            return { view, timer, sessions, levelName, audioUrl, showSeal, startMeditation, formatTime, confirmExit, reset, audioPlayer };
         }
     }).mount('#app');
 </script>
