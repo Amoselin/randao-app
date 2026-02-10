@@ -8,7 +8,7 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <style>
         :root {
-            /* 隨 2026/02/10 立春節氣自動更新的環境色 */
+            /* 隨 2026/02/10 立春節氣自動更新 */
             --paper: #f2f5f0; 
             --ink: #1a1a1a;
             --shadow-dark: #babecc;
@@ -38,26 +38,24 @@
         .virtue-name { font-size: 1.1rem; letter-spacing: 8px; margin-bottom: 5px; color: var(--ink); }
         .virtue-eng { font-size: 0.55rem; letter-spacing: 2px; color: rgba(0,0,0,0.4); text-transform: uppercase; }
 
-        .v-ren { background-color: #f2f5f0; } /* 溫柔覺醒 */
-        .v-yi { background-color: #e8e8e8; }  /* 即將推出 */
+        .v-ren { background-color: #f2f5f0; } 
+        .v-yi { background-color: #e8e8e8; }  
         .v-li { background-color: #f5eceb; }
         .v-zhi { background-color: #e6ebf0; }
         .v-xin { background-color: #f0ede6; }
 
-        /* --- PAGE 1: 選擇畫面 (採用您喜好的呈現方式) --- */
+        /* --- PAGE 1: 模式選擇 --- */
         .selection-screen { height: 100%; display: flex; flex-direction: column; position: relative; }
         .choice-box {
             flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            cursor: pointer; transition: all 0.6s ease; position: relative;
+            cursor: pointer; transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1); position: relative;
         }
         .choice-box.top { background-color: var(--gray-light); }
         .choice-box.bottom { background-color: var(--gray-mid); }
-
-        /* 點選後的拉伸與變暗動態 */
         .choice-box.selected { flex: 1.5; background-color: #dfdbd2; }
         .choice-box.unselected { flex: 0.5; opacity: 0.5; }
 
-        /* 修正字體跑掉問題：設定固定寬度與對齊 */
+        /* 修正字體穩定度 */
         .choice-title { 
             font-size: 1.1rem; letter-spacing: 10px; font-weight: 400; color: var(--ink); 
             margin-bottom: 8px; white-space: nowrap; text-align: center;
@@ -67,16 +65,33 @@
             text-transform: uppercase; white-space: nowrap;
         }
 
-        /* 啟動按鈕 */
+        /* --- 優化後的確定進入按鈕 (Soft UI 極致版) --- */
         .start-trigger {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 50; opacity: 0; pointer-events: none; transition: all 0.5s ease;
+            z-index: 50; opacity: 0; pointer-events: none; transition: all 0.6s ease;
         }
         .start-trigger.visible { opacity: 1; pointer-events: auto; }
+
         .btn-confirm {
-            background: var(--paper); border: 0.5px solid var(--ink); padding: 15px 45px;
-            font-size: 0.85rem; letter-spacing: 8px; cursor: pointer;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); font-family: "Noto Serif TC", serif;
+            background-color: var(--paper); border: none; padding: 20px 60px;
+            font-family: "Noto Serif TC", serif; font-size: 0.95rem; font-weight: 200; 
+            letter-spacing: 12px; color: var(--ink); cursor: pointer; border-radius: 60px;
+            /* 擬物化雙陰影 */
+            box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
+            transition: all 0.3s ease;
+            animation: btn-breathe 4s infinite alternate ease-in-out;
+        }
+
+        /* 點擊時的下陷感 */
+        .btn-confirm:active {
+            box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+            transform: scale(0.98);
+        }
+
+        /* 呼吸動畫讓按鈕更具生命力 */
+        @keyframes btn-breathe {
+            from { box-shadow: 8px 8px 15px var(--shadow-dark), -8px -8px 15px var(--shadow-light); }
+            to { box-shadow: 12px 12px 25px var(--shadow-dark), -12px -12px 25px var(--shadow-light); }
         }
 
         /* --- PAGE 2: 計時畫面 --- */
@@ -105,7 +120,6 @@
             cursor: pointer; font-size: 0.75rem; margin-bottom: 15px;
         }
 
-        /* 實時人數提示：移至冥想畫面底部 */
         .live-counter-active {
             position: absolute; bottom: 40px; width: 100%; text-align: center;
             font-size: 0.65rem; letter-spacing: 2px; color: #9a9a9a; opacity: 0.7;
@@ -130,40 +144,22 @@
             <div class="virtue-name">溫柔覺醒</div>
             <div class="virtue-eng">Benevolence</div>
         </div>
-        <div class="virtue-block v-yi locked">
+        <div v-for="v in ['Righteousness','Propriety','Wisdom','Integrity']" class="virtue-block locked">
             <div class="virtue-name">即將推出</div>
-            <div class="virtue-eng">Righteousness</div>
-        </div>
-        <div class="virtue-block v-li locked">
-            <div class="virtue-name">即將推出</div>
-            <div class="virtue-eng">Propriety</div>
-        </div>
-        <div class="virtue-block v-zhi locked">
-            <div class="virtue-name">即將推出</div>
-            <div class="virtue-eng">Wisdom</div>
-        </div>
-        <div class="virtue-block v-xin locked">
-            <div class="virtue-name">即將推出</div>
-            <div class="virtue-eng">Integrity</div>
+            <div class="virtue-eng">{{ v }}</div>
         </div>
     </div>
 
     <transition name="fade">
         <div v-if="view === 'selection'" class="selection-screen">
-            <div class="choice-box top" 
-                 :class="{ selected: selectedMode === 'voice', unselected: selectedMode === 'pure' }"
-                 @click="selectedMode = 'voice'">
+            <div class="choice-box top" :class="{ selected: selectedMode === 'voice', unselected: selectedMode === 'pure' }" @click="selectedMode = 'voice'">
                 <div class="choice-title">導引冥想</div>
                 <div class="choice-sub">Guided Meditation</div>
             </div>
-
-            <div class="choice-box bottom" 
-                 :class="{ selected: selectedMode === 'pure', unselected: selectedMode === 'voice' }"
-                 @click="selectedMode = 'pure'">
+            <div class="choice-box bottom" :class="{ selected: selectedMode === 'pure', unselected: selectedMode === 'voice' }" @click="selectedMode = 'pure'">
                 <div class="choice-title">純境音樂</div>
                 <div class="choice-sub">Pure Ambient</div>
             </div>
-
             <div class="start-trigger" :class="{ visible: selectedMode }">
                 <button class="btn-confirm" @click="confirmStart">確定進入</button>
             </div>
@@ -183,10 +179,7 @@
             <div style="margin-bottom: 40px; font-size: 1.1rem; letter-spacing: 12px; font-weight: 300;">溫柔覺醒</div>
             <button class="btn-ui" @click="confirmEnd">結束冥想</button>
             <button class="btn-ui" style="font-size: 0.65rem; color: #999;" @click="reset">回到首頁</button>
-
-            <div class="live-counter-active">
-                目前共有 {{ liveCount }} 位使用者正與您一同冥想
-            </div>
+            <div class="live-counter-active">目前共有 {{ liveCount }} 位使用者正與您一同冥想</div>
         </div>
     </transition>
 
@@ -195,10 +188,8 @@
             <svg v-if="growthStage === 'seed'" class="growth-stage-icon" viewBox="0 0 24 24"><path d="M12,2C12,2 4,10 4,15C4,19.42 7.58,23 12,23C16.42,23 20,19.42 20,15C20,10 12,2 12,2M12,21C8.69,21 6,18.31 6,15C6,12.33 10.33,7.33 12,5.33C13.67,7.33 18,12.33 18,15C18,18.31 15.31,21 12,21Z"/></svg>
             <svg v-if="growthStage === 'sprout'" class="growth-stage-icon" viewBox="0 0 24 24"><path d="M2,22C2,22 3,18 7,15C11,12 10,8 10,8C10,8 11,9 11,12C11,15 9,19 2,22M22,22C22,22 21,18 17,15C13,12 14,8 14,8C14,8 13,9 13,12C13,15 15,19 22,22M12,22V15C12,15 12,9 12,5C12,1 12,1 12,1"/></svg>
             <svg v-if="growthStage === 'thrive'" class="growth-stage-icon" viewBox="0 0 24 24"><path d="M12,2L9,7H11V13H13V7H15L12,2M13,14.29C13.88,13.9 14.88,13.84 15.8,14.11C17.7,14.67 18.81,16.66 18.25,18.56C17.69,20.45 15.71,21.57 13.81,21C12.89,20.73 12.15,20.14 11.69,19.4C11.23,20.14 10.5,20.73 9.58,21C7.68,21.57 5.7,20.45 5.14,18.56C4.58,16.66 5.69,14.67 7.59,14.11C8.5,13.84 9.5,13.9 10.39,14.29C10.82,13.5 11.45,12.85 12,12.44C12.55,12.85 13.18,13.5 13.61,14.29Z"/></svg>
-            
             <div style="font-size: 1.1rem; letter-spacing: 12px; margin-bottom: 10px;">溫柔覺醒：{{ stageName }}</div>
             <div style="font-size: 0.75rem; color: #888; letter-spacing: 4px; margin-bottom: 50px; text-align: center; line-height: 1.8;">{{ stageDesc }}</div>
-
             <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
                 <button class="btn-ui" @click="playAgain">再次啟動</button>
                 <button class="btn-ui" style="font-size: 0.65rem; color: #999;" @click="reset">回到首頁</button>
@@ -223,7 +214,6 @@
             let wakeLock = null;
             let interval = null;
 
-            // --- 生命意象邏輯 ---
             const growthStage = computed(() => sessions.value <= 7 ? 'seed' : (sessions.value <= 21 ? 'sprout' : 'thrive'));
             const stageName = computed(() => ({ seed: '播種', sprout: '發芽', thrive: '茁壯' }[growthStage.value]));
             const stageDesc = computed(() => ({
@@ -234,11 +224,8 @@
 
             const audioUrl = computed(() => 'https://slbktbschxdrliypfmos.supabase.co/storage/v1/object/public/meditation-assets/music-ren-pure.mp3');
 
-            const selectVirtue = (name) => {
-                if(name === '仁') view.value = 'selection';
-            };
+            const selectVirtue = (name) => { if(name === '仁') view.value = 'selection'; };
 
-            // --- 確認進入流程 ---
             const confirmStart = async () => {
                 view.value = 'active';
                 setTimeout(() => {
@@ -260,11 +247,7 @@
                 view.value = 'finish';
             };
 
-            const playAgain = () => {
-                view.value = 'selection';
-                setTimeout(() => confirmStart(), 100);
-            };
-
+            const playAgain = () => { view.value = 'selection'; setTimeout(() => confirmStart(), 100); };
             const reset = () => {
                 clearInterval(interval);
                 if (wakeLock) wakeLock.release();
@@ -279,21 +262,15 @@
             const confirmEnd = () => { if(confirm("確定結束本次冥想？")) reset(); };
 
             onMounted(() => {
-                // 節氣與環境初始化
                 const now = new Date();
                 const month = now.getMonth() + 1;
                 const hour = now.getHours();
-                
                 let paper = '#ebecf0';
                 if (month === 2) paper = '#f2f5f0'; // 立春嫩灰
-                
                 let blob = 'rgba(49, 49, 49, 0.12)';
                 if (hour >= 5 && hour < 11) blob = 'rgba(100, 150, 255, 0.1)';
                 else if (hour >= 17 && hour < 20) blob = 'rgba(255, 120, 50, 0.1)';
-                
                 envStyle.value = { '--paper': paper, '--blob-color': blob };
-                
-                // 模擬共修人數
                 setInterval(() => { liveCount.value += (Math.floor(Math.random() * 3) - 1); }, 8000);
             });
 
