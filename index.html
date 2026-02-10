@@ -8,32 +8,34 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <style>
         :root {
+            /* 預設色調，會隨節氣與時間動態覆蓋 */
             --paper: #ebecf0; 
-            --white: #ffffff;
+            --ink: #313131;
             --shadow-dark: #babecc;
             --shadow-light: #ffffff;
-            --ink: #313131;
-            --gray-1: #f2f0eb;
-            --gray-2: #e8e5de;
+            --blob-color: rgba(49, 49, 49, 0.12);
         }
 
-        body, html { margin: 0; padding: 0; height: 100%; background: var(--paper); font-family: "Noto Serif TC", serif; overflow: hidden; }
+        body, html { margin: 0; padding: 0; height: 100%; background: var(--paper); font-family: "Noto Serif TC", serif; overflow: hidden; transition: background-color 2s ease; }
         #app { height: 100%; display: flex; flex-direction: column; }
 
-        /* --- 頁面一：直接選取區 --- */
+        /* --- 頁面一：選擇畫面 --- */
         .selection-screen { height: 100%; display: flex; flex-direction: column; }
         .choice-box {
             flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            cursor: pointer; transition: background-color 0.3s;
+            cursor: pointer; transition: background-color 0.5s;
         }
-        .choice-box.top { background-color: var(--gray-1); }
-        .choice-box.bottom { background-color: var(--gray-2); }
-        .choice-box:active { background-color: #dfdbd2; }
-
+        .choice-box:first-child { border-bottom: 0.5px solid rgba(0,0,0,0.03); }
         .choice-title { font-size: 1.1rem; letter-spacing: 10px; color: var(--ink); margin-bottom: 8px; }
         .choice-sub { font-size: 0.6rem; letter-spacing: 4px; color: #888; text-transform: uppercase; }
 
-        /* --- 頁面二：計時主畫面 (Soft UI) --- */
+        /* 實時人數提示 */
+        .live-counter {
+            position: absolute; bottom: 30px; width: 100%; text-align: center;
+            font-size: 0.65rem; letter-spacing: 2px; color: #999;
+        }
+
+        /* --- 頁面二：計時主畫面 --- */
         .meditation-screen {
             position: fixed; inset: 0; background: var(--paper);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -48,42 +50,41 @@
             margin-bottom: 40px;
         }
 
-        /* 液態背景 */
-        .liquid-bg { position: absolute; width: 200px; height: 200px; filter: blur(18px) contrast(20); opacity: 0.12; }
+        .liquid-bg { position: absolute; width: 200px; height: 200px; filter: blur(18px) contrast(20); opacity: 0.15; }
         .liquid-ball {
             position: absolute; background: var(--ink); border-radius: 50%;
             animation: move-ball 10s infinite ease-in-out alternate;
+            background-color: var(--blob-color);
         }
-        @keyframes move-ball {
-            0% { transform: translate(-20px, -15px) scale(1); }
-            100% { transform: translate(20px, 15px) scale(1.1); }
-        }
+        @keyframes move-ball { 0% { transform: translate(-20px, -15px) scale(1); } 100% { transform: translate(20px, 15px) scale(1.2); } }
 
         .timer-display { font-size: 3.2rem; font-weight: 200; letter-spacing: -2px; z-index: 10; color: var(--ink); }
 
-        /* 按鈕組 */
-        .controls { display: flex; flex-direction: column; gap: 20px; align-items: center; }
-        
         .btn-ui {
             background: var(--paper); border: none; padding: 12px 40px;
             border-radius: 30px; font-family: "Noto Serif TC"; letter-spacing: 4px; color: var(--ink);
             box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light);
-            cursor: pointer; transition: 0.2s; font-size: 0.8rem;
+            cursor: pointer; transition: 0.2s; font-size: 0.75rem; margin-bottom: 15px;
         }
-        .btn-ui:active { box-shadow: inset 2px 2px 5px var(--shadow-dark); transform: scale(0.98); }
-        
-        .btn-home { font-size: 0.7rem; color: #999; box-shadow: 2px 2px 6px var(--shadow-dark), -2px -2px 6px var(--shadow-light); }
+        .btn-ui:active { box-shadow: inset 2px 2px 5px var(--shadow-dark); }
+        .btn-home { font-size: 0.65rem; color: #999; box-shadow: 2px 2px 6px var(--shadow-dark), -2px -2px 6px var(--shadow-light); }
 
-        /* --- 數位印記 --- */
-        .modal { position: fixed; inset: 0; background: var(--paper); z-index: 200; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        /* --- 頁面三：成長意象 (Finish) --- */
+        .finish-screen {
+            position: fixed; inset: 0; background: var(--paper);
+            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200;
+        }
+        .growth-stage-icon { width: 150px; height: 150px; margin-bottom: 30px; fill: var(--ink); opacity: 0.7; }
+        .stage-title { font-size: 1.2rem; letter-spacing: 12px; margin-bottom: 10px; font-weight: 400; }
+        .stage-desc { font-size: 0.75rem; color: #888; letter-spacing: 4px; margin-bottom: 40px; }
 
-        .fade-enter-active, .fade-leave-active { transition: opacity 0.8s ease; }
+        .fade-enter-active, .fade-leave-active { transition: opacity 1s ease; }
         .fade-enter-from, .fade-leave-to { opacity: 0; }
     </style>
 </head>
 <body>
 
-<div id="app">
+<div id="app" :style="envStyle">
     <div v-if="view === 'selection'" class="selection-screen">
         <div class="choice-box top" @click="startMeditation('voice')">
             <div class="choice-title">導引冥想</div>
@@ -91,59 +92,94 @@
         </div>
         <div class="choice-box bottom" @click="startMeditation('pure')">
             <div class="choice-title">純境音樂</div>
-            <div class="choice-sub">Pure</div>
+            <div class="choice-sub">Ambient</div>
+        </div>
+        <div class="live-counter">
+            目前全球共有 {{ liveCount }} 位修行者正與您一同點燃燃道
         </div>
     </div>
 
     <transition name="fade">
         <div v-if="view === 'active'" class="meditation-screen">
-            <div style="position: absolute; top: 40px; font-size: 0.65rem; color: #aaa; letter-spacing: 3px;">
-                {{ levelName }}．第 {{ sessions }} 回修行
+            <div style="position: absolute; top: 40px; font-size: 0.6rem; color: #aaa; letter-spacing: 2px;">
+                修行紀錄：第 {{ sessions }} 回
             </div>
-
             <div class="timer-container">
                 <div class="liquid-bg">
-                    <div class="liquid-ball" style="width: 90px; height: 90px; left: 50px; top: 50px;"></div>
-                    <div class="liquid-ball" style="width: 100px; height: 100px; left: 30px; top: 30px; animation-delay: -4s;"></div>
+                    <div class="liquid-ball" style="width: 100px; height: 100px; left: 50px; top: 50px;"></div>
+                    <div class="liquid-ball" style="width: 80px; height: 80px; left: 80px; top: 80px; animation-delay: -3s;"></div>
                 </div>
                 <div class="timer-display">{{ formatTime(timer) }}</div>
             </div>
-
-            <div style="margin-bottom: 40px; font-size: 1.1rem; letter-spacing: 12px; font-weight: 300;">溫柔覺醒</div>
-            
-            <div class="controls">
-                <button class="btn-ui" @click="confirmEnd">結束冥想</button>
-                <button class="btn-ui btn-home" @click="reset">回到首頁</button>
-            </div>
+            <div style="margin-bottom: 40px; font-size: 1rem; letter-spacing: 12px; font-weight: 300;">溫柔覺醒</div>
+            <button class="btn-ui" @click="confirmEnd">結束冥想</button>
+            <button class="btn-ui btn-home" @click="reset">回到首頁</button>
         </div>
     </transition>
 
-    <div v-if="showSeal" class="modal">
-        <canvas id="sealCanvas" width="300" height="300"></canvas>
-        <button class="btn-ui" style="margin-top: 40px;" @click="reset">重回本心</button>
-    </div>
+    <transition name="fade">
+        <div v-if="view === 'finish'" class="finish-screen">
+            <svg v-if="growthStage === 'seed'" class="growth-stage-icon" viewBox="0 0 24 24"><path d="M12,2C12,2 4,10 4,15C4,19.42 7.58,23 12,23C16.42,23 20,19.42 20,15C20,10 12,2 12,2M12,21C8.69,21 6,18.31 6,15C6,12.33 10.33,7.33 12,5.33C13.67,7.33 18,12.33 18,15C18,18.31 15.31,21 12,21Z"/></svg>
+            <svg v-if="growthStage === 'sprout'" class="growth-stage-icon" viewBox="0 0 24 24"><path d="M2,22C2,22 3,18 7,15C11,12 10,8 10,8C10,8 11,9 11,12C11,15 9,19 2,22M22,22C22,22 21,18 17,15C13,12 14,8 14,8C14,8 13,9 13,12C13,15 15,19 22,22M12,22V15C12,15 12,9 12,5C12,1 12,1 12,1"/></svg>
+            <svg v-if="growthStage === 'thrive'" class="growth-stage-icon" viewBox="0 0 24 24"><path d="M12,2L9,7H11V13H13V7H15L12,2M13,14.29C13.88,13.9 14.88,13.84 15.8,14.11C17.7,14.67 18.81,16.66 18.25,18.56C17.69,20.45 15.71,21.57 13.81,21C12.89,20.73 12.15,20.14 11.69,19.4C11.23,20.14 10.5,20.73 9.58,21C7.68,21.57 5.7,20.45 5.14,18.56C4.58,16.66 5.69,14.67 7.59,14.11C8.5,13.84 9.5,13.9 10.39,14.29C10.82,13.5 11.45,12.85 12,12.44C12.55,12.85 13.18,13.5 13.61,14.29Z"/></svg>
+
+            <div class="stage-title">溫柔覺醒：{{ stageName }}</div>
+            <div class="stage-desc">{{ stageDesc }}</div>
+            <button class="btn-ui" @click="reset">重回本心</button>
+        </div>
+    </transition>
 
     <audio ref="audioPlayer" :src="audioUrl" loop playsinline></audio>
 </div>
 
 <script>
-    const { createApp, ref, computed } = Vue;
+    const { createApp, ref, computed, onMounted } = Vue;
     createApp({
         setup() {
             const view = ref('selection');
             const timer = ref(900);
             const sessions = ref(Number(localStorage.getItem('rd_count') || 0));
-            const showSeal = ref(false);
+            const liveCount = ref(128);
             const audioPlayer = ref(null);
+            const envStyle = ref({});
             let wakeLock = null;
             let interval = null;
 
-            // 音頻網址
-            const audioUrl = computed(() => 'https://slbktbschxdrliypfmos.supabase.co/storage/v1/object/public/meditation-assets/music-ren-pure.mp3');
-            const levelName = computed(() => sessions.value < 7 ? '初發心' : (sessions.value < 21 ? '行深位' : '入道位'));
+            // --- 意象成長邏輯 ---
+            const growthStage = computed(() => {
+                if (sessions.value <= 7) return 'seed';
+                if (sessions.value <= 21) return 'sprout';
+                return 'thrive';
+            });
+            const stageName = computed(() => ({ seed: '播種', sprout: '發芽', thrive: '茁壯' }[growthStage.value]));
+            const stageDesc = computed(() => ({
+                seed: '埋下善念，感受土地的包容。',
+                sprout: '突破自我，展現向上的生命力。',
+                thrive: '成蔭護人，建立與萬物的連結。'
+            }[growthStage.value]));
 
-            // 核心邏輯：點擊區塊直接開始
-            const startMeditation = async (mode) => {
+            const audioUrl = computed(() => 'https://slbktbschxdrliypfmos.supabase.co/storage/v1/object/public/meditation-assets/music-ren-pure.mp3');
+
+            // --- 節氣與環境 UI 控制 ---
+            const updateEnv = () => {
+                const now = new Date();
+                const hour = now.getHours();
+                const month = now.getMonth() + 1;
+                
+                // 1. 節氣灰階 (2月立春，偏嫩灰)
+                let paper = '#ebecf0';
+                if (month === 2) paper = '#f2f5f0'; // 立春
+                if (month === 12) paper = '#e5e6eb'; // 冬至
+
+                // 2. 時間偏色
+                let blob = 'rgba(49, 49, 49, 0.12)';
+                if (hour >= 5 && hour < 11) blob = 'rgba(100, 150, 255, 0.1)'; // 晨
+                else if (hour >= 17 && hour < 20) blob = 'rgba(255, 120, 50, 0.1)'; // 昏
+
+                envStyle.value = { '--paper': paper, '--blob-color': blob };
+            };
+
+            const startMeditation = (mode) => {
                 view.value = 'active';
                 setTimeout(() => {
                     audioPlayer.value.play();
@@ -156,39 +192,28 @@
                 clearInterval(interval);
                 sessions.value++;
                 localStorage.setItem('rd_count', sessions.value);
-                showSeal.value = true;
-                setTimeout(drawSeal, 100);
-            };
-
-            const drawSeal = () => {
-                const canvas = document.getElementById('sealCanvas');
-                const ctx = canvas.getContext('2d');
-                ctx.fillStyle = "white"; ctx.fillRect(0,0,300,300);
-                ctx.strokeStyle = "#a62c2b"; ctx.lineWidth = 6;
-                ctx.strokeRect(45, 45, 210, 210);
-                ctx.fillStyle = "#a62c2b"; ctx.textAlign = "center";
-                ctx.font = "bold 28px 'Noto Serif TC'";
-                ctx.fillText("溫柔覺醒", 150, 140);
-                ctx.font = "14px 'Noto Serif TC'";
-                ctx.fillText(`第 ${sessions.value} 回紀錄`, 150, 185);
-                ctx.globalCompositeOperation = 'destination-out';
-                for(let i=0; i<150; i++) { ctx.beginPath(); ctx.arc(Math.random()*300, Math.random()*300, Math.random()*1.2, 0, Math.PI*2); ctx.fill(); }
+                view.value = 'finish';
             };
 
             const reset = () => {
                 clearInterval(interval);
                 if (wakeLock) wakeLock.release();
                 view.value = 'selection';
-                showSeal.value = false;
                 timer.value = 900;
                 audioPlayer.value.pause();
                 audioPlayer.value.currentTime = 0;
             };
 
             const formatTime = (s) => `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
-            const confirmEnd = () => { if(confirm("確定要結束這次冥想嗎？")) reset(); };
+            const confirmEnd = () => { if(confirm("確定要結束本次冥想嗎？")) reset(); };
 
-            return { view, timer, sessions, levelName, audioUrl, showSeal, startMeditation, formatTime, confirmEnd, reset, audioPlayer };
+            onMounted(() => {
+                updateEnv();
+                // 模擬實時人數變動
+                setInterval(() => { liveCount.value += Math.floor(Math.random() * 5) - 2; }, 8000);
+            });
+
+            return { view, timer, sessions, liveCount, audioUrl, envStyle, growthStage, stageName, stageDesc, startMeditation, formatTime, confirmEnd, reset, audioPlayer };
         }
     }).mount('#app');
 </script>
