@@ -8,8 +8,7 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <style>
         :root {
-            /* 隨 2026/02/10 立春節氣自動更新 */
-            --paper: #f2f5f0; 
+            --paper: #f2f5f0; /* 2026/02/11 立春嫩灰 */
             --ink: #1a1a1a;
             --shadow-dark: #babecc;
             --shadow-light: #ffffff;
@@ -18,54 +17,42 @@
             --gray-mid: #e8e5de;
         }
 
-        body, html { 
-            margin: 0; padding: 0; height: 100%; 
-            background-color: var(--paper); 
-            font-family: "Noto Serif TC", serif; 
-            overflow: hidden; 
-            transition: background-color 2.5s ease; 
-        }
-        
+        body, html { margin: 0; padding: 0; height: 100%; background-color: var(--paper); font-family: "Noto Serif TC", serif; overflow: hidden; transition: background-color 2.5s ease; }
         #app { height: 100%; display: flex; flex-direction: column; position: relative; }
 
-        /* --- PAGE 0: 五常入口 --- */
+        /* --- PAGE 0: 五常入口 (補強底色顯示) --- */
         .virtue-screen { height: 100%; display: flex; flex-direction: column; }
         .virtue-block {
             flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
             cursor: pointer; transition: 0.4s ease; border-bottom: 0.5px solid rgba(0,0,0,0.03);
         }
         .virtue-block.locked { cursor: default; filter: grayscale(0.5); opacity: 0.8; }
+        
+        /* 確保五常顏色具備正確權重 */
+        .virtue-block.v-ren { background-color: #f2f5f0 !important; } 
+        .virtue-block.v-yi { background-color: #e8e8e8 !important; }  
+        .virtue-block.v-li { background-color: #f5eceb !important; }
+        .virtue-block.v-zhi { background-color: #e6ebf0 !important; }
+        .virtue-block.v-xin { background-color: #f0ede6 !important; }
+
         .virtue-name { font-size: 1.1rem; letter-spacing: 8px; margin-bottom: 5px; color: var(--ink); }
         .virtue-eng { font-size: 0.55rem; letter-spacing: 2px; color: rgba(0,0,0,0.4); text-transform: uppercase; }
-
-        .v-ren { background-color: #f2f5f0; } 
-        .v-yi { background-color: #e8e8e8; }  
-        .v-li { background-color: #f5eceb; }
-        .v-zhi { background-color: #e6ebf0; }
-        .v-xin { background-color: #f0ede6; }
 
         /* --- PAGE 1: 模式選擇 --- */
         .selection-screen { height: 100%; display: flex; flex-direction: column; position: relative; }
         .choice-box {
             flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            cursor: pointer; transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1); position: relative;
+            cursor: pointer; transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .choice-box.top { background-color: var(--gray-light); }
         .choice-box.bottom { background-color: var(--gray-mid); }
         .choice-box.selected { flex: 1.5; background-color: #dfdbd2; }
         .choice-box.unselected { flex: 0.5; opacity: 0.5; }
 
-        /* 修正字體穩定度 */
-        .choice-title { 
-            font-size: 1.1rem; letter-spacing: 10px; font-weight: 400; color: var(--ink); 
-            margin-bottom: 8px; white-space: nowrap; text-align: center;
-        }
-        .choice-sub { 
-            font-size: 0.6rem; letter-spacing: 4px; color: #888; 
-            text-transform: uppercase; white-space: nowrap;
-        }
+        .choice-title { font-size: 1.1rem; letter-spacing: 10px; font-weight: 400; color: var(--ink); margin-bottom: 8px; white-space: nowrap; }
+        .choice-sub { font-size: 0.6rem; letter-spacing: 4px; color: #888; text-transform: uppercase; white-space: nowrap; }
 
-        /* --- 優化後的確定進入按鈕 (Soft UI 極致版) --- */
+        /* 確定進入按鈕 (文字縮小、Soft UI 優化) */
         .start-trigger {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             z-index: 50; opacity: 0; pointer-events: none; transition: all 0.6s ease;
@@ -73,25 +60,17 @@
         .start-trigger.visible { opacity: 1; pointer-events: auto; }
 
         .btn-confirm {
-            background-color: var(--paper); border: none; padding: 20px 60px;
-            font-family: "Noto Serif TC", serif; font-size: 0.95rem; font-weight: 200; 
-            letter-spacing: 12px; color: var(--ink); cursor: pointer; border-radius: 60px;
-            /* 擬物化雙陰影 */
+            background-color: var(--paper); border: none; padding: 18px 50px;
+            font-family: "Noto Serif TC", serif; 
+            font-size: 0.75rem; /* 字體縮小 */
+            font-weight: 400; letter-spacing: 10px; color: var(--ink); 
+            cursor: pointer; border-radius: 50px;
             box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
             transition: all 0.3s ease;
-            animation: btn-breathe 4s infinite alternate ease-in-out;
         }
-
-        /* 點擊時的下陷感 */
         .btn-confirm:active {
             box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
-            transform: scale(0.98);
-        }
-
-        /* 呼吸動畫讓按鈕更具生命力 */
-        @keyframes btn-breathe {
-            from { box-shadow: 8px 8px 15px var(--shadow-dark), -8px -8px 15px var(--shadow-light); }
-            to { box-shadow: 12px 12px 25px var(--shadow-dark), -12px -12px 25px var(--shadow-light); }
+            transform: scale(0.97);
         }
 
         /* --- PAGE 2: 計時畫面 --- */
@@ -144,9 +123,9 @@
             <div class="virtue-name">溫柔覺醒</div>
             <div class="virtue-eng">Benevolence</div>
         </div>
-        <div v-for="v in ['Righteousness','Propriety','Wisdom','Integrity']" class="virtue-block locked">
+        <div v-for="v in virtues" :key="v.eng" class="virtue-block locked" :class="v.class">
             <div class="virtue-name">即將推出</div>
-            <div class="virtue-eng">{{ v }}</div>
+            <div class="virtue-eng">{{ v.eng }}</div>
         </div>
     </div>
 
@@ -214,6 +193,13 @@
             let wakeLock = null;
             let interval = null;
 
+            const virtues = [
+                { eng: 'Righteousness', class: 'v-yi' },
+                { eng: 'Propriety', class: 'v-li' },
+                { eng: 'Wisdom', class: 'v-zhi' },
+                { eng: 'Integrity', class: 'v-xin' }
+            ];
+
             const growthStage = computed(() => sessions.value <= 7 ? 'seed' : (sessions.value <= 21 ? 'sprout' : 'thrive'));
             const stageName = computed(() => ({ seed: '播種', sprout: '發芽', thrive: '茁壯' }[growthStage.value]));
             const stageDesc = computed(() => ({
@@ -226,9 +212,11 @@
 
             const selectVirtue = (name) => { if(name === '仁') view.value = 'selection'; };
 
-            const confirmStart = async () => {
+            const confirmStart = () => {
                 view.value = 'active';
+                timer.value = 900; // 重置計時
                 setTimeout(() => {
+                    audioPlayer.value.currentTime = 0;
                     audioPlayer.value.play();
                     if ('wakeLock' in navigator) navigator.wakeLock.request('screen').then(l => wakeLock = l);
                     interval = setInterval(() => { 
@@ -247,7 +235,12 @@
                 view.value = 'finish';
             };
 
-            const playAgain = () => { view.value = 'selection'; setTimeout(() => confirmStart(), 100); };
+            // 優化再次啟動：重置狀態後進入確認流程
+            const playAgain = () => {
+                view.value = 'selection';
+                setTimeout(() => { confirmStart(); }, 150);
+            };
+
             const reset = () => {
                 clearInterval(interval);
                 if (wakeLock) wakeLock.release();
@@ -274,7 +267,7 @@
                 setInterval(() => { liveCount.value += (Math.floor(Math.random() * 3) - 1); }, 8000);
             });
 
-            return { view, selectedMode, timer, sessions, liveCount, audioUrl, envStyle, growthStage, stageName, stageDesc, selectVirtue, confirmStart, playAgain, formatTime, confirmEnd, reset, audioPlayer };
+            return { view, virtues, selectedMode, timer, sessions, liveCount, audioUrl, envStyle, growthStage, stageName, stageDesc, selectVirtue, confirmStart, playAgain, formatTime, confirmEnd, reset, audioPlayer };
         }
     }).mount('#app');
 </script>
