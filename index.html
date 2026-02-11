@@ -8,7 +8,8 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <style>
         :root {
-            --paper: #f2f5f0; /* 2026/02/11 立春嫩灰 */
+            /* 2026/02/11 立春嫩灰色調 */
+            --paper: #f2f5f0; 
             --ink: #1a1a1a;
             --shadow-dark: #babecc;
             --shadow-light: #ffffff;
@@ -20,7 +21,7 @@
         body, html { margin: 0; padding: 0; height: 100%; background-color: var(--paper); font-family: "Noto Serif TC", serif; overflow: hidden; transition: background-color 2.5s ease; }
         #app { height: 100%; display: flex; flex-direction: column; position: relative; }
 
-        /* --- PAGE 0: 五常入口 (補強底色顯示) --- */
+        /* --- PAGE 0: 五常入口 --- */
         .virtue-screen { height: 100%; display: flex; flex-direction: column; }
         .virtue-block {
             flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -28,7 +29,7 @@
         }
         .virtue-block.locked { cursor: default; filter: grayscale(0.5); opacity: 0.8; }
         
-        /* 確保五常顏色具備正確權重 */
+        /* 修復五常底色 */
         .virtue-block.v-ren { background-color: #f2f5f0 !important; } 
         .virtue-block.v-yi { background-color: #e8e8e8 !important; }  
         .virtue-block.v-li { background-color: #f5eceb !important; }
@@ -52,7 +53,7 @@
         .choice-title { font-size: 1.1rem; letter-spacing: 10px; font-weight: 400; color: var(--ink); margin-bottom: 8px; white-space: nowrap; }
         .choice-sub { font-size: 0.6rem; letter-spacing: 4px; color: #888; text-transform: uppercase; white-space: nowrap; }
 
-        /* 確定進入按鈕 (文字縮小、Soft UI 優化) */
+        /* 確定進入按鈕 */
         .start-trigger {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             z-index: 50; opacity: 0; pointer-events: none; transition: all 0.6s ease;
@@ -62,15 +63,10 @@
         .btn-confirm {
             background-color: var(--paper); border: none; padding: 18px 50px;
             font-family: "Noto Serif TC", serif; 
-            font-size: 0.75rem; /* 字體縮小 */
+            font-size: 0.75rem; /* 縮小字體 */
             font-weight: 400; letter-spacing: 10px; color: var(--ink); 
             cursor: pointer; border-radius: 50px;
             box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
-            transition: all 0.3s ease;
-        }
-        .btn-confirm:active {
-            box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
-            transform: scale(0.97);
         }
 
         /* --- PAGE 2: 計時畫面 --- */
@@ -176,7 +172,7 @@
         </div>
     </transition>
 
-    <audio ref="audioPlayer" :src="audioUrl" loop playsinline></audio>
+    <audio ref="audioPlayer" :src="audioUrl" playsinline></audio>
 </div>
 
 <script>
@@ -214,8 +210,9 @@
 
             const confirmStart = () => {
                 view.value = 'active';
-                timer.value = 900; // 重置計時
+                timer.value = 900;
                 setTimeout(() => {
+                    audioPlayer.value.loop = true; // 開啟循環
                     audioPlayer.value.currentTime = 0;
                     audioPlayer.value.play();
                     if ('wakeLock' in navigator) navigator.wakeLock.request('screen').then(l => wakeLock = l);
@@ -231,11 +228,15 @@
                 if (wakeLock) wakeLock.release();
                 sessions.value++;
                 localStorage.setItem('rd_count', sessions.value);
+                
+                // --- 修復音訊回彈問題 ---
+                audioPlayer.value.loop = false; // 關鍵：先關閉循環
                 audioPlayer.value.pause();
+                audioPlayer.value.currentTime = 0; // 強制歸零
+                
                 view.value = 'finish';
             };
 
-            // 優化再次啟動：重置狀態後進入確認流程
             const playAgain = () => {
                 view.value = 'selection';
                 setTimeout(() => { confirmStart(); }, 150);
@@ -247,6 +248,7 @@
                 view.value = 'virtues';
                 selectedMode.value = null;
                 timer.value = 900;
+                audioPlayer.value.loop = false;
                 audioPlayer.value.pause();
                 audioPlayer.value.currentTime = 0;
             };
