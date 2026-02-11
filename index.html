@@ -8,7 +8,7 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <style>
         :root {
-            /* 2026/02/11 立春節氣色調：嫩綠灰 */
+            /* 2026/02/11 立春節氣色調 */
             --paper: #f2f5f0; 
             --ink: #1a1a1a;
             --shadow-dark: #babecc;
@@ -21,7 +21,7 @@
         body, html { margin: 0; padding: 0; height: 100%; background-color: var(--paper); font-family: "Noto Serif TC", serif; overflow: hidden; transition: background-color 2.5s ease; }
         #app { height: 100%; display: flex; flex-direction: column; position: relative; }
 
-        /* --- PAGE 0: 五常入口 --- */
+        /* --- PAGE 0: 五常入口 (底色修復) --- */
         .virtue-screen { height: 100%; display: flex; flex-direction: column; }
         .virtue-block {
             flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -201,7 +201,6 @@
                 thrive: '成蔭護人，建立與萬物的連結。'
             }[growthStage.value]));
 
-            // Supabase 音訊位址
             const MP3_URL = 'https://slbktbschxdrliypfmos.supabase.co/storage/v1/object/public/meditation-assets/music-ren-pure.mp3';
 
             const selectVirtue = (name) => { if(name === '仁') view.value = 'selection'; };
@@ -210,17 +209,24 @@
                 view.value = 'active';
                 timer.value = 900;
                 setTimeout(() => {
-                    // --- 啟動時動態加載來源 ---
                     audioPlayer.value.src = MP3_URL;
-                    audioPlayer.value.loop = true;
-                    audioPlayer.value.muted = false;
                     audioPlayer.value.volume = 1.0;
+                    audioPlayer.value.loop = true;
                     audioPlayer.value.play();
                     
                     if ('wakeLock' in navigator) navigator.wakeLock.request('screen').then(l => wakeLock = l);
+                    
+                    // --- 核心改動：音量淡出邏輯 ---
                     interval = setInterval(() => { 
-                        if (timer.value > 0) timer.value--; 
-                        else handleFinish(); 
+                        if (timer.value > 0) {
+                            timer.value--;
+                            // 最後 3 秒開始平滑降低音量，消除回彈噪音
+                            if (timer.value <= 3 && timer.value > 0) {
+                                audioPlayer.value.volume = Math.max(0, audioPlayer.value.volume - 0.3);
+                            }
+                        } else {
+                            handleFinish(); 
+                        }
                     }, 1000);
                 }, 800);
             };
@@ -231,13 +237,12 @@
                 sessions.value++;
                 localStorage.setItem('rd_count', sessions.value);
                 
-                // --- 徹底解決音訊回彈問題：清空來源法 ---
+                // --- 徹底切斷音訊來源 ---
                 if (audioPlayer.value) {
+                    audioPlayer.value.volume = 0; // 確保靜音
                     audioPlayer.value.pause();
-                    audioPlayer.value.muted = true;
-                    audioPlayer.value.volume = 0;
-                    audioPlayer.value.src = ""; // 關鍵：清空來源強制釋放內存
-                    audioPlayer.value.load();    // 重新加載空的狀態
+                    audioPlayer.value.src = "";   // 清空來源釋放緩存
+                    audioPlayer.value.load();    
                 }
                 
                 view.value = 'finish';
@@ -267,15 +272,11 @@
                 const now = new Date();
                 const month = now.getMonth() + 1;
                 const hour = now.getHours();
-                
-                // 2026/02/11 立春色調：嫩綠灰 (#f2f5f0)
                 let paper = '#ebecf0';
-                if (month === 2) paper = '#f2f5f0'; 
-                
+                if (month === 2) paper = '#f2f5f0'; // 立春嫩灰
                 let blob = 'rgba(49, 49, 49, 0.12)';
                 if (hour >= 5 && hour < 11) blob = 'rgba(100, 150, 255, 0.1)';
                 else if (hour >= 17 && hour < 20) blob = 'rgba(255, 120, 50, 0.1)';
-                
                 envStyle.value = { '--paper': paper, '--blob-color': blob };
                 setInterval(() => { liveCount.value += (Math.floor(Math.random() * 3) - 1); }, 8000);
             });
