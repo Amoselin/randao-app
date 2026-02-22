@@ -3,38 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>燃道 Randao | 五常系列</title>
+    <title>燃道 Rendao | 溫柔覺醒</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@200;400;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
         :root {
-            /* 2026/02/11 立春節氣色調 */
+            /* 2026/02/22 立春嫩灰色調 */
             --paper: #f2f5f0; 
             --ink: #1a1a1a;
             --shadow-dark: #babecc;
             --shadow-light: #ffffff;
             --blob-color: rgba(49, 49, 49, 0.12);
-            --gray-light: #f2f0eb;
-            --gray-mid: #e8e5de;
         }
 
         body, html { margin: 0; padding: 0; height: 100%; background-color: var(--paper); font-family: "Noto Serif TC", serif; overflow: hidden; transition: background-color 2.5s ease; }
         #app { height: 100%; display: flex; flex-direction: column; position: relative; }
 
-        /* --- PAGE 0: 五常入口 (底色修復) --- */
+        /* --- PAGE 0: 五常入口 --- */
         .virtue-screen { height: 100%; display: flex; flex-direction: column; }
         .virtue-block {
             flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
             cursor: pointer; transition: 0.4s ease; border-bottom: 0.5px solid rgba(0,0,0,0.03);
         }
-        .virtue-block.locked { cursor: default; filter: grayscale(0.5); opacity: 0.8; }
-        
-        .virtue-block.v-ren { background-color: #f2f5f0 !important; } 
-        .virtue-block.v-yi { background-color: #e8e8e8 !important; }  
-        .virtue-block.v-li { background-color: #f5eceb !important; }
-        .virtue-block.v-zhi { background-color: #e6ebf0 !important; }
-        .virtue-block.v-xin { background-color: #f0ede6 !important; }
-
+        .virtue-block.v-ren { background-color: #f2f5f0 !important; }
+        .virtue-block.locked { cursor: default; filter: grayscale(0.5); opacity: 0.8; background-color: #e8e8e8; }
         .virtue-name { font-size: 1.1rem; letter-spacing: 8px; margin-bottom: 5px; color: var(--ink); }
         .virtue-eng { font-size: 0.55rem; letter-spacing: 2px; color: rgba(0,0,0,0.4); text-transform: uppercase; }
 
@@ -44,91 +37,72 @@
             flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
             cursor: pointer; transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .choice-box.top { background-color: var(--gray-light); }
-        .choice-box.bottom { background-color: var(--gray-mid); }
         .choice-box.selected { flex: 1.5; background-color: #dfdbd2; }
         .choice-box.unselected { flex: 0.5; opacity: 0.5; }
+        .choice-title { font-size: 1.1rem; letter-spacing: 10px; font-weight: 400; color: var(--ink); margin-bottom: 8px; }
+        .choice-sub { font-size: 0.6rem; letter-spacing: 4px; color: #888; text-transform: uppercase; }
 
-        .choice-title { font-size: 1.1rem; letter-spacing: 10px; font-weight: 400; color: var(--ink); margin-bottom: 8px; white-space: nowrap; }
-        .choice-sub { font-size: 0.6rem; letter-spacing: 4px; color: #888; text-transform: uppercase; white-space: nowrap; }
-
-        .start-trigger {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 50; opacity: 0; pointer-events: none; transition: all 0.6s ease;
-        }
+        /* 確定進入按鈕 (Soft UI) */
+        .start-trigger { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 50; opacity: 0; pointer-events: none; transition: all 0.6s ease; }
         .start-trigger.visible { opacity: 1; pointer-events: auto; }
-
         .btn-confirm {
-            background-color: var(--paper); border: none; padding: 18px 50px;
-            font-family: "Noto Serif TC", serif; font-size: 0.75rem; 
-            font-weight: 400; letter-spacing: 10px; color: var(--ink); 
-            cursor: pointer; border-radius: 50px;
+            background-color: var(--paper); border: none; padding: 18px 50px; font-family: "Noto Serif TC", serif; 
+            font-size: 0.75rem; letter-spacing: 10px; color: var(--ink); cursor: pointer; border-radius: 50px;
             box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
         }
 
-        /* --- PAGE 2: 計時畫面 --- */
-        .meditation-screen {
-            position: fixed; inset: 0; background-color: var(--paper);
-            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100;
-        }
+        /* --- PAGE 2: 冥想計時 (含光感 Blob) --- */
+        .meditation-screen { position: fixed; inset: 0; background-color: var(--paper); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
         .timer-container {
-            position: relative; width: 270px; height: 270px;
-            background-color: var(--paper); border-radius: 50%;
+            position: relative; width: 280px; height: 280px; background-color: var(--paper); border-radius: 50%;
             box-shadow: 15px 15px 35px var(--shadow-dark), -15px -15px 35px var(--shadow-light);
             display: flex; justify-content: center; align-items: center; margin-bottom: 40px;
         }
-        .liquid-bg { position: absolute; width: 200px; height: 200px; filter: blur(20px) contrast(20); opacity: 0.15; }
-        .liquid-ball {
-            position: absolute; border-radius: 50%; animation: move-ball 12s infinite ease-in-out alternate;
-            background-color: var(--blob-color);
+        /* 隨光感縮放的視覺核心 */
+        .blob-core {
+            position: absolute; width: 200px; height: 200px; border-radius: 50%;
+            background-color: var(--blob-color); filter: blur(20px);
+            transition: transform 0.3s ease;
         }
-        @keyframes move-ball { 0% { transform: translate(-25px, -15px) scale(1); } 100% { transform: translate(25px, 20px) scale(1.2); } }
-        .timer-display { font-size: 3.2rem; font-weight: 200; letter-spacing: -2px; z-index: 10; color: var(--ink); }
+        .timer-display { font-size: 3.5rem; font-weight: 200; letter-spacing: -2px; z-index: 10; color: var(--ink); }
 
-        .btn-ui {
-            background-color: var(--paper); border: none; padding: 12px 40px; border-radius: 30px; 
-            font-family: "Noto Serif TC"; letter-spacing: 4px; color: var(--ink);
-            box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light);
-            cursor: pointer; font-size: 0.75rem; margin-bottom: 15px;
-        }
+        .live-counter-active { position: absolute; bottom: 40px; width: 100%; text-align: center; font-size: 0.65rem; letter-spacing: 2px; color: #9a9a9a; opacity: 0.7; }
 
-        .live-counter-active {
-            position: absolute; bottom: 40px; width: 100%; text-align: center;
-            font-size: 0.65rem; letter-spacing: 2px; color: #9a9a9a; opacity: 0.7;
-        }
+        /* --- PAGE 3: 生命意象與藍道碼 --- */
+        .finish-screen { position: fixed; inset: 0; background-color: var(--paper); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200; }
+        .growth-stage-icon { width: 100px; height: 100px; margin-bottom: 25px; fill: var(--ink); opacity: 0.6; }
+        .randao-code { font-size: 0.6rem; letter-spacing: 3px; color: #bbb; font-family: monospace; margin-bottom: 40px; border: 0.5px solid #eee; padding: 4px 12px; border-radius: 4px; }
 
-        /* --- PAGE 3: 生命意象頁 --- */
-        .finish-screen {
-            position: fixed; inset: 0; background-color: var(--paper);
-            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200;
-        }
-        .growth-stage-icon { width: 120px; height: 120px; margin-bottom: 30px; fill: var(--ink); opacity: 0.6; }
+        .btn-ui { background-color: var(--paper); border: none; padding: 12px 40px; border-radius: 30px; font-family: "Noto Serif TC"; letter-spacing: 4px; color: var(--ink); box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light); cursor: pointer; font-size: 0.75rem; margin-bottom: 15px; }
 
         .fade-enter-active, .fade-leave-active { transition: opacity 1.2s ease; }
         .fade-enter-from, .fade-leave-to { opacity: 0; }
+        video { position: absolute; opacity: 0; pointer-events: none; }
     </style>
 </head>
 <body>
 
 <div id="app" :style="envStyle">
+    <video ref="videoRef" autoplay playsinline></video>
+
     <div v-if="view === 'virtues'" class="virtue-screen">
         <div class="virtue-block v-ren" @click="selectVirtue('仁')">
             <div class="virtue-name">溫柔覺醒</div>
             <div class="virtue-eng">Benevolence</div>
         </div>
-        <div v-for="v in virtues" :key="v.eng" class="virtue-block locked" :class="v.class">
+        <div v-for="v in ['Righteousness','Propriety','Wisdom','Integrity']" :key="v" class="virtue-block locked">
             <div class="virtue-name">即將推出</div>
-            <div class="virtue-eng">{{ v.eng }}</div>
+            <div class="virtue-eng">{{ v }}</div>
         </div>
     </div>
 
     <transition name="fade">
         <div v-if="view === 'selection'" class="selection-screen">
-            <div class="choice-box top" :class="{ selected: selectedMode === 'voice', unselected: selectedMode === 'pure' }" @click="selectedMode = 'voice'">
+            <div class="choice-box" :class="{ selected: selectedMode === 'voice', unselected: selectedMode === 'pure' }" @click="selectedMode = 'voice'" style="background-color: var(--gray-light);">
                 <div class="choice-title">導引冥想</div>
                 <div class="choice-sub">Guided Meditation</div>
             </div>
-            <div class="choice-box bottom" :class="{ selected: selectedMode === 'pure', unselected: selectedMode === 'voice' }" @click="selectedMode = 'pure'">
+            <div class="choice-box" :class="{ selected: selectedMode === 'pure', unselected: selectedMode === 'voice' }" @click="selectedMode = 'pure'" style="background-color: var(--gray-mid);">
                 <div class="choice-title">純境音樂</div>
                 <div class="choice-sub">Pure Ambient</div>
             </div>
@@ -142,15 +116,12 @@
         <div v-if="view === 'active'" class="meditation-screen">
             <div style="position: absolute; top: 40px; font-size: 0.6rem; color: #aaa; letter-spacing: 2px;">修行紀錄：第 {{ sessions }} 回</div>
             <div class="timer-container">
-                <div class="liquid-bg">
-                    <div class="liquid-ball" style="width: 100px; height: 100px; left: 50px; top: 50px;"></div>
-                    <div class="liquid-ball" style="width: 80px; height: 80px; left: 80px; top: 80px; animation-delay: -3s;"></div>
-                </div>
+                <div class="blob-core" :style="{ transform: `scale(${1 + brightness/500})`, opacity: 0.1 + (brightness/512) }"></div>
                 <div class="timer-display">{{ formatTime(timer) }}</div>
             </div>
             <div style="margin-bottom: 40px; font-size: 1.1rem; letter-spacing: 12px; font-weight: 300;">溫柔覺醒</div>
+            
             <button class="btn-ui" @click="confirmEnd">結束冥想</button>
-            <button class="btn-ui" style="font-size: 0.65rem; color: #999;" @click="reset">回到首頁</button>
             <div class="live-counter-active">目前共有 {{ liveCount }} 位使用者正與您一同冥想</div>
         </div>
     </transition>
@@ -161,119 +132,133 @@
             <svg v-if="growthStage === 'sprout'" class="growth-stage-icon" viewBox="0 0 24 24"><path d="M2,22C2,22 3,18 7,15C11,12 10,8 10,8C10,8 11,9 11,12C11,15 9,19 2,22M22,22C22,22 21,18 17,15C13,12 14,8 14,8C14,8 13,9 13,12C13,15 15,19 22,22M12,22V15C12,15 12,9 12,5C12,1 12,1 12,1"/></svg>
             <svg v-if="growthStage === 'thrive'" class="growth-stage-icon" viewBox="0 0 24 24"><path d="M12,2L9,7H11V13H13V7H15L12,2M13,14.29C13.88,13.9 14.88,13.84 15.8,14.11C17.7,14.67 18.81,16.66 18.25,18.56C17.69,20.45 15.71,21.57 13.81,21C12.89,20.73 12.15,20.14 11.69,19.4C11.23,20.14 10.5,20.73 9.58,21C7.68,21.57 5.7,20.45 5.14,18.56C4.58,16.66 5.69,14.67 7.59,14.11C8.5,13.84 9.5,13.9 10.39,14.29C10.82,13.5 11.45,12.85 12,12.44C12.55,12.85 13.18,13.5 13.61,14.29Z"/></svg>
             <div style="font-size: 1.1rem; letter-spacing: 12px; margin-bottom: 10px;">溫柔覺醒：{{ stageName }}</div>
-            <div style="font-size: 0.75rem; color: #888; letter-spacing: 4px; margin-bottom: 50px; text-align: center; line-height: 1.8;">{{ stageDesc }}</div>
-            <div style="display: flex; flex-direction: column; gap: 15px; align-items: center;">
+            <div style="font-size: 0.75rem; color: #888; letter-spacing: 4px; margin-bottom: 15px;">{{ stageDesc }}</div>
+            <div class="randao-code">RANDAO-CODE: {{ generatedCode }}</div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
                 <button class="btn-ui" @click="playAgain">再次啟動</button>
                 <button class="btn-ui" style="font-size: 0.65rem; color: #999;" @click="reset">回到首頁</button>
             </div>
         </div>
     </transition>
-
-    <audio ref="audioPlayer" playsinline></audio>
 </div>
 
 <script>
-    const { createApp, ref, computed, onMounted } = Vue;
+    const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
     createApp({
         setup() {
             const view = ref('virtues');
             const selectedMode = ref(null);
             const timer = ref(900);
             const sessions = ref(Number(localStorage.getItem('rd_count') || 0));
-            const liveCount = ref(128); 
-            const audioPlayer = ref(null);
+            const liveCount = ref(128);
+            const generatedCode = ref('');
+            const brightness = ref(0);
+            const videoRef = ref(null);
             const envStyle = ref({});
-            let wakeLock = null;
-            let interval = null;
-
-            const virtues = [
-                { eng: 'Righteousness', class: 'v-yi' },
-                { eng: 'Propriety', class: 'v-li' },
-                { eng: 'Wisdom', class: 'v-zhi' },
-                { eng: 'Integrity', class: 'v-xin' }
-            ];
+            
+            // 聲學引擎
+            let player = null;
+            let synth = null;
+            let animationFrame = null;
 
             const growthStage = computed(() => sessions.value <= 7 ? 'seed' : (sessions.value <= 21 ? 'sprout' : 'thrive'));
             const stageName = computed(() => ({ seed: '播種', sprout: '發芽', thrive: '茁壯' }[growthStage.value]));
-            const stageDesc = computed(() => ({
-                seed: '埋下善念，感受土地的包容。',
-                sprout: '突破自我，展現向上的生命力。',
-                thrive: '成蔭護人，建立與萬物的連結。'
-            }[growthStage.value]));
+            const stageDesc = computed(() => ({ seed: '埋下善念，感受土地的包容。', sprout: '突破自我，展現向上的生命力。', thrive: '成蔭護人，建立與萬物的連結。' }[growthStage.value]));
 
-            const MP3_URL = 'https://slbktbschxdrliypfmos.supabase.co/storage/v1/object/public/meditation-assets/music-ren-pure.mp3';
+            // 初始化聲學引擎
+            const initAudio = async () => {
+                await Tone.start();
+                player = new Tone.Player({
+                    url: "https://slbktbschxdrliypfmos.supabase.co/storage/v1/object/public/meditation-assets/music-ren-pure.mp3",
+                    loop: true,
+                    fadeOut: 3
+                }).toDestination();
+
+                synth = new Tone.FMSynth({
+                    harmonicity: 3.01, modulationIndex: 5,
+                    oscillator: { type: 'sine' },
+                    envelope: { attack: 0.5, release: 2 }
+                }).toDestination();
+                const reverb = new Tone.Reverb(12).toDestination();
+                synth.connect(reverb);
+            };
+
+            // 光感應分析 (RANDAO 隨機邏輯)
+            const analyzeLight = () => {
+                const video = videoRef.value;
+                if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = 40; canvas.height = 30;
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                    let total = 0;
+                    for (let i = 0; i < data.length; i += 4) total += (data[i] + data[i+1] + data[i+2])/3;
+                    brightness.value = total / (data.length / 4);
+
+                    if (synth && view.value === 'active') {
+                        // 光感應與合成器連動
+                        const modLevel = Tone.util.map(brightness.value, 0, 255, 2, 25);
+                        synth.modulationIndex.rampTo(modLevel, 0.2);
+                        // 隨機觸發五音階 (RANDAO 隨機性)
+                        if (Math.random() > 0.985) {
+                            const notes = ["C4", "Eb4", "F4", "G4", "Bb4"]; // 仁之五音
+                            synth.triggerAttackRelease(notes[Math.floor(Math.random()*notes.length)], "4n");
+                        }
+                    }
+                }
+                animationFrame = requestAnimationFrame(analyzeLight);
+            };
 
             const selectVirtue = (name) => { if(name === '仁') view.value = 'selection'; };
 
-            const confirmStart = () => {
+            const confirmStart = async () => {
+                await initAudio();
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                videoRef.value.srcObject = stream;
+                
                 view.value = 'active';
-                timer.value = 900;
-                setTimeout(() => {
-                    audioPlayer.value.src = MP3_URL;
-                    audioPlayer.value.volume = 1.0;
-                    audioPlayer.value.loop = true;
-                    audioPlayer.value.play();
-                    
-                    if ('wakeLock' in navigator) navigator.wakeLock.request('screen').then(l => wakeLock = l);
-                    
-                    // --- 核心改動：音量淡出邏輯 ---
-                    interval = setInterval(() => { 
-                        if (timer.value > 0) {
-                            timer.value--;
-                            // 最後 3 秒開始平滑降低音量，消除回彈噪音
-                            if (timer.value <= 3 && timer.value > 0) {
-                                audioPlayer.value.volume = Math.max(0, audioPlayer.value.volume - 0.3);
-                            }
-                        } else {
-                            handleFinish(); 
-                        }
-                    }, 1000);
-                }, 800);
+                player.start();
+                analyzeLight();
+
+                let interval = setInterval(() => {
+                    if (timer.value > 0) {
+                        timer.value--;
+                        // 最後 3 秒音量淡出
+                        if (timer.value <= 3) player.volume.value -= 10;
+                    } else {
+                        clearInterval(interval);
+                        handleFinish();
+                    }
+                }, 1000);
             };
 
             const handleFinish = () => {
-                clearInterval(interval);
-                if (wakeLock) wakeLock.release();
+                stopAll();
+                generatedCode.value = `RD-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${(sessions.value+1).toString().padStart(4,'0')}-${Math.random().toString(36).substring(2,4).toUpperCase()}`;
                 sessions.value++;
                 localStorage.setItem('rd_count', sessions.value);
-                
-                // --- 徹底切斷音訊來源 ---
-                if (audioPlayer.value) {
-                    audioPlayer.value.volume = 0; // 確保靜音
-                    audioPlayer.value.pause();
-                    audioPlayer.value.src = "";   // 清空來源釋放緩存
-                    audioPlayer.value.load();    
-                }
-                
                 view.value = 'finish';
             };
 
-            const playAgain = () => {
-                view.value = 'selection';
-                setTimeout(() => { confirmStart(); }, 150);
-            };
-
-            const reset = () => {
-                clearInterval(interval);
-                if (wakeLock) wakeLock.release();
-                view.value = 'virtues';
-                selectedMode.value = null;
-                timer.value = 900;
-                if (audioPlayer.value) {
-                    audioPlayer.value.pause();
-                    audioPlayer.value.src = "";
+            const stopAll = () => {
+                player?.stop();
+                synth?.triggerRelease();
+                cancelAnimationFrame(animationFrame);
+                if (videoRef.value?.srcObject) {
+                    videoRef.value.srcObject.getTracks().forEach(t => t.stop());
                 }
             };
 
+            const playAgain = () => { view.value = 'selection'; timer.value = 900; };
+            const reset = () => { stopAll(); view.value = 'virtues'; selectedMode.value = null; timer.value = 900; };
             const formatTime = (s) => `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
             const confirmEnd = () => { if(confirm("確定結束本次冥想？")) reset(); };
 
             onMounted(() => {
-                const now = new Date();
-                const month = now.getMonth() + 1;
-                const hour = now.getHours();
-                let paper = '#ebecf0';
-                if (month === 2) paper = '#f2f5f0'; // 立春嫩灰
+                const hour = new Date().getHours();
+                const month = new Date().getMonth() + 1;
+                let paper = (month === 2) ? '#f2f5f0' : '#ebecf0';
                 let blob = 'rgba(49, 49, 49, 0.12)';
                 if (hour >= 5 && hour < 11) blob = 'rgba(100, 150, 255, 0.1)';
                 else if (hour >= 17 && hour < 20) blob = 'rgba(255, 120, 50, 0.1)';
@@ -281,11 +266,11 @@
                 setInterval(() => { liveCount.value += (Math.floor(Math.random() * 3) - 1); }, 8000);
             });
 
-            return { view, virtues, selectedMode, timer, sessions, liveCount, envStyle, growthStage, stageName, stageDesc, selectVirtue, confirmStart, playAgain, formatTime, confirmEnd, reset, audioPlayer };
+            onUnmounted(stopAll);
+
+            return { view, virtues: ['Righteousness','Propriety','Wisdom','Integrity'], selectedMode, timer, sessions, liveCount, envStyle, growthStage, stageName, stageDesc, generatedCode, brightness, videoRef, selectVirtue, confirmStart, playAgain, formatTime, confirmEnd, reset };
         }
     }).mount('#app');
 </script>
 </body>
 </html>
-
-
