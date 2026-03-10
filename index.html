@@ -8,6 +8,7 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <style>
         :root {
+            /* 2026/03/10 立春節氣色調 */
             --paper: #f2f5f0; 
             --ink: #1a1a1a;
             --shadow-dark: #babecc;
@@ -28,6 +29,7 @@
         .virtue-block.v-li { background-color: #f5eceb !important; }
         .virtue-block.v-zhi { background-color: #e6ebf0 !important; }
         .virtue-block.v-xin { background-color: #f0ede6 !important; }
+        .virtue-block.locked { cursor: default; filter: grayscale(0.5); opacity: 0.8; }
         .virtue-name { font-size: 1.1rem; letter-spacing: 8px; margin-bottom: 5px; color: var(--ink); }
         .virtue-eng { font-size: 0.55rem; letter-spacing: 2px; color: rgba(0,0,0,0.4); text-transform: uppercase; }
 
@@ -134,7 +136,10 @@
             const envStyle = ref({});
             let interval = null;
 
-            const MP3_URL = 'https://slbktbschxdrliypfmos.supabase.co/storage/v1/object/public/meditation-assets/music-ren-pure.mp3';
+            // --- 音頻路徑設定 ---
+            // 建議將檔案放在 Repo 的 public/music-ren-pure.mp3
+            // 或者直接使用 GitHub Raw 連結 (需更換為您的真實網址)
+            const MP3_URL = "./music-ren-pure.mp3"; 
 
             const virtues = [{ eng: 'Righteousness', class: 'v-yi' }, { eng: 'Propriety', class: 'v-li' }, { eng: 'Wisdom', class: 'v-zhi' }, { eng: 'Integrity', class: 'v-xin' }];
             const growthStage = computed(() => sessions.value <= 7 ? 'seed' : (sessions.value <= 21 ? 'sprout' : 'thrive'));
@@ -143,23 +148,17 @@
 
             const selectVirtue = (name) => { if(name === '仁') view.value = 'selection'; };
 
-            // --- 核心修正：立即播放邏輯 ---
             const confirmStart = () => {
-                // 1. 立即設定來源
+                // 立即解鎖音頻
                 audioPlayer.value.src = MP3_URL;
                 audioPlayer.value.loop = true;
-                
-                // 2. 立即嘗試播放（這一步必須與 click 事件同步發生）
                 const playPromise = audioPlayer.value.play();
-                
+
                 if (playPromise !== undefined) {
                     playPromise.then(() => {
-                        // 播放成功後再進行頁面切換，確保使用者體驗流暢
                         view.value = 'active';
                         startTimer();
-                    }).catch(error => {
-                        console.error("播放失敗：", error);
-                        // 如果因為瀏覽器限制失敗，仍然切換頁面讓使用者看到進度
+                    }).catch(() => {
                         view.value = 'active';
                         startTimer();
                     });
@@ -170,8 +169,11 @@
                 timer.value = 900;
                 if (interval) clearInterval(interval);
                 interval = setInterval(() => {
-                    if (timer.value > 0) timer.value--;
-                    else handleFinish();
+                    if (timer.value > 0) {
+                        timer.value--;
+                        // 倒數 3 秒淡出
+                        if (timer.value <= 3) audioPlayer.value.volume = Math.max(0, audioPlayer.value.volume - 0.3);
+                    } else handleFinish();
                 }, 1000);
             };
 
