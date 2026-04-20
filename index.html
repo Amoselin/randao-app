@@ -3,217 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>燃道 Randao | 溫柔覺醒</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@200;400;700&display=swap" rel="stylesheet">
+    <title>燃道 Randao | 鬱而舒</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <style>
         :root {
-            /* 2026/03/10 立春節氣色調 */
-            --paper: #f2f5f0; 
-            --ink: #1a1a1a;
-            --shadow-dark: #babecc;
-            --shadow-light: #ffffff;
-            --blob-color: rgba(49, 49, 49, 0.12);
-            --gray-light: #f2f0eb;
-            --gray-mid: #e8e5de;
+            --bg-gradient: linear-gradient(135deg, #e6ddd6 0%, #c8b9ad 100%);
+            --text-main: #2c251f;
+            --text-light: #7a6e64;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-radius: 24px;
+            --btn-dark: #1f1b18;
         }
 
-        body, html { margin: 0; padding: 0; height: 100%; background-color: var(--paper); font-family: "Noto Serif TC", serif; overflow: hidden; transition: background-color 2.5s ease; }
-        #app { height: 100%; display: flex; flex-direction: column; position: relative; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body, html { 
+            margin: 0; padding: 0; height: 100%; 
+            background-color: #d1c4b9; 
+            font-family: 'Outfit', 'Noto Sans TC', sans-serif; 
+            color: var(--text-main);
+            display: flex; justify-content: center; align-items: center;
+        }
 
-        /* --- PAGE 0: 五常入口 --- */
-        .virtue-screen { height: 100%; display: flex; flex-direction: column; }
-        .virtue-block { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: 0.4s ease; border-bottom: 0.5px solid rgba(0,0,0,0.03); }
-        .virtue-block.v-ren { background-color: #f2f5f0 !important; } 
-        .virtue-block.v-yi { background-color: #e8e8e8 !important; }  
-        .virtue-block.v-li { background-color: #f5eceb !important; }
-        .virtue-block.v-zhi { background-color: #e6ebf0 !important; }
-        .virtue-block.v-xin { background-color: #f0ede6 !important; }
-        .virtue-block.locked { cursor: default; filter: grayscale(0.5); opacity: 0.8; }
-        .virtue-name { font-size: 1.1rem; letter-spacing: 8px; margin-bottom: 5px; color: var(--ink); }
-        .virtue-eng { font-size: 0.55rem; letter-spacing: 2px; color: rgba(0,0,0,0.4); text-transform: uppercase; }
+        /* 模擬手機版面限制 */
+        #app { 
+            width: 100%; max-width: 414px; height: 100%; max-height: 896px; 
+            background: var(--bg-gradient); 
+            position: relative; overflow: hidden; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+        }
 
-        /* --- PAGE 1: 模式選擇 --- */
-        .selection-screen { height: 100%; display: flex; flex-direction: column; position: relative; }
-        .choice-box { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
-        .choice-box.top { background-color: var(--gray-light); }
-        .choice-box.bottom { background-color: var(--gray-mid); }
-        .choice-box.selected { flex: 1.5; background-color: #dfdbd2; }
-        .choice-box.unselected { flex: 0.5; opacity: 0.5; }
-        .choice-title { font-size: 1.1rem; letter-spacing: 10px; font-weight: 400; color: var(--ink); margin-bottom: 8px; white-space: nowrap; }
-        .choice-sub { font-size: 0.6rem; letter-spacing: 4px; color: #888; text-transform: uppercase; white-space: nowrap; }
+        @media (min-width: 415px) {
+            #app { height: 90vh; border-radius: 40px; } /* 桌面端預覽時的圓角 */
+        }
 
-        .start-trigger { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 50; opacity: 0; pointer-events: none; transition: all 0.6s ease; }
-        .start-trigger.visible { opacity: 1; pointer-events: auto; }
-        .btn-confirm { background-color: var(--paper); border: none; padding: 18px 50px; font-family: "Noto Serif TC", serif; font-size: 0.75rem; font-weight: 400; letter-spacing: 10px; color: var(--ink); cursor: pointer; border-radius: 50px; box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light); }
+        /* --- 共用 UI 元件 --- */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--card-radius);
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+        
+        .icon-btn {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; border: none; font-size: 1.2rem;
+        }
 
-        /* --- PAGE 2: 計時畫面 --- */
-        .meditation-screen { position: fixed; inset: 0; background-color: var(--paper); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
-        .timer-container { position: relative; width: 270px; height: 270px; background-color: var(--paper); border-radius: 50%; box-shadow: 15px 15px 35px var(--shadow-dark), -15px -15px 35px var(--shadow-light); display: flex; justify-content: center; align-items: center; margin-bottom: 40px; }
-        .liquid-bg { position: absolute; width: 200px; height: 200px; filter: blur(20px) contrast(20); opacity: 0.15; }
-        .liquid-ball { position: absolute; border-radius: 50%; animation: move-ball 12s infinite ease-in-out alternate; background-color: var(--blob-color); }
-        @keyframes move-ball { 0% { transform: translate(-25px, -15px) scale(1); } 100% { transform: translate(25px, 20px) scale(1.2); } }
-        .timer-display { font-size: 3.2rem; font-weight: 200; letter-spacing: -2px; z-index: 10; color: var(--ink); }
-        .btn-ui { background-color: var(--paper); border: none; padding: 12px 40px; border-radius: 30px; font-family: "Noto Serif TC"; letter-spacing: 4px; color: var(--ink); box-shadow: 4px 4px 10px var(--shadow-dark), -4px -4px 10px var(--shadow-light); cursor: pointer; font-size: 0.75rem; margin-bottom: 15px; }
-        .live-counter-active { position: absolute; bottom: 40px; width: 100%; text-align: center; font-size: 0.65rem; letter-spacing: 2px; color: #9a9a9a; opacity: 0.7; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-top: 10px; }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; }
 
-        /* --- PAGE 3: 生命意象頁 --- */
-        .finish-screen { position: fixed; inset: 0; background-color: var(--paper); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200; }
-        .growth-stage-icon { width: 120px; height: 120px; margin-bottom: 30px; fill: var(--ink); opacity: 0.6; }
-        .fade-enter-active, .fade-leave-active { transition: opacity 1.2s ease; }
+        /* --- 視圖 1: 歡迎頁 (Onboarding) --- */
+        .onboarding {
+            height: 100%; 
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=1000&auto=format&fit=crop') center/cover;
+            display: flex; flex-direction: column; justify-content: flex-end; padding: 40px 30px; color: white;
+        }
+        .app-name { font-size: 0.9rem; margin-bottom: 15px; opacity: 0.9; }
+        .hero-title { font-size: 2.5rem; font-weight: 500; line-height: 1.1; margin-bottom: 40px; }
+        .btn-join {
+            background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 50px; padding: 15px 25px; color: white; font-size: 1.1rem;
+            display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.3s;
+        }
+        .btn-join .arrow { background: white; color: black; border-radius: 50%; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; }
+
+        /* --- 視圖 2: 計畫頁 (Dashboard) --- */
+        .dashboard { padding: 40px 25px; height: 100%; overflow-y: auto; }
+        .greeting { font-size: 1rem; color: var(--text-light); margin-bottom: 5px; }
+        .main-title { font-size: 2.2rem; font-weight: 400; line-height: 1.2; margin-bottom: 30px; }
+        .action-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .btn-black { background: var(--btn-dark); color: white; border-radius: 30px; padding: 12px 25px; border: none; font-size: 0.9rem; cursor: pointer; }
+        
+        .grid-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .card-small { display: flex; flex-direction: column; justify-content: space-between; height: 140px; cursor: pointer;}
+        .card-icon { width: 35px; height: 35px; background: #f0ebe1; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
+        .card-time { font-size: 1.5rem; font-weight: 500; margin-bottom: 2px; }
+        .card-desc { font-size: 0.75rem; color: var(--text-light); }
+        
+        .card-wide { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+
+        /* --- 視圖 3: 日曆頁 (Calendar) --- */
+        .calendar-view { padding: 40px 25px; height: 100%; overflow-y: auto; }
+        .cal-title { font-size: 2.2rem; font-weight: 400; margin-bottom: 25px; }
+        .cal-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .month-selector { background: rgba(255,255,255,0.4); border-radius: 20px; padding: 8px 15px; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; }
+        .toggle-group { display: flex; background: rgba(255,255,255,0.4); border-radius: 30px; padding: 5px; }
+        .toggle-btn { padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; border: none; background: transparent; cursor: pointer; }
+        .toggle-btn.active { background: var(--btn-dark); color: white; }
+
+        .calendar-grid { width: 100%; border-collapse: separate; border-spacing: 0 10px; margin-bottom: 30px;}
+        .calendar-grid th { font-weight: 400; font-size: 0.75rem; color: var(--text-light); padding-bottom: 15px; }
+        .calendar-grid td { text-align: center; width: 14.28%; }
+        .day-node { width: 35px; height: 35px; margin: 0 auto; display: flex; justify-content: center; align-items: center; border-radius: 10px; font-size: 0.9rem; background: var(--card-bg); cursor: pointer;}
+        .day-node.active-dark { background: var(--btn-dark); color: white; }
+        .day-node.inactive { opacity: 0.4; }
+        
+        .trainer-card { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+        .trainer-info h4 { margin: 0 0 5px 0; font-size: 1.2rem; font-weight: 500; }
+        .trainer-info p { margin: 0; font-size: 0.8rem; color: var(--text-light); }
+        .trainer-img { width: 80px; height: 80px; border-radius: 15px; object-fit: cover; }
+
+        /* 動畫過渡 */
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.5s ease; }
         .fade-enter-from, .fade-leave-to { opacity: 0; }
     </style>
 </head>
 <body>
 
-<div id="app" :style="envStyle">
-    <div v-if="view === 'virtues'" class="virtue-screen">
-        <div class="virtue-block v-ren" @click="selectVirtue('仁')">
-            <div class="virtue-name">溫柔覺醒</div>
-            <div class="virtue-eng">Benevolence</div>
-        </div>
-        <div v-for="v in virtues" :key="v.eng" class="virtue-block locked" :class="v.class">
-            <div class="virtue-name">即將推出</div>
-            <div class="virtue-eng">{{ v.eng }}</div>
-        </div>
-    </div>
-
+<div id="app">
     <transition name="fade">
-        <div v-if="view === 'selection'" class="selection-screen">
-            <div class="choice-box top" :class="{ selected: selectedMode === 'voice', unselected: selectedMode === 'pure' }" @click="selectedMode = 'voice'">
-                <div class="choice-title">導引冥想</div>
-                <div class="choice-sub">Guided Meditation</div>
-            </div>
-            <div class="choice-box bottom" :class="{ selected: selectedMode === 'pure', unselected: selectedMode === 'voice' }" @click="selectedMode = 'pure'">
-                <div class="choice-title">純境音樂</div>
-                <div class="choice-sub">Pure Ambient</div>
-            </div>
-            <div class="start-trigger" :class="{ visible: selectedMode }">
-                <button class="btn-confirm" @click="confirmStart">確定進入</button>
+        <div v-if="view === 'onboarding'" class="onboarding">
+            <div class="app-name">燃道 Randao</div>
+            <h1 class="hero-title">Discover a new<br>world of wellness<br>and serenity</h1>
+            <div class="btn-join" @click="view = 'dashboard'">
+                <div class="arrow">→</div>
+                <span>Join Now</span>
+                <span>>></span>
             </div>
         </div>
     </transition>
 
     <transition name="fade">
-        <div v-if="view === 'active'" class="meditation-screen">
-            <div style="position: absolute; top: 40px; font-size: 0.6rem; color: #aaa; letter-spacing: 2px;">修行紀錄：第 {{ sessions }} 回</div>
-            <div class="timer-container">
-                <div class="liquid-bg"><div class="liquid-ball" style="width: 100px; height: 100px; left: 50px; top: 50px;"></div><div class="liquid-ball" style="width: 80px; height: 80px; left: 80px; top: 80px; animation-delay: -3s;"></div></div>
-                <div class="timer-display">{{ formatTime(timer) }}</div>
+        <div v-if="view === 'dashboard'" class="dashboard">
+            <div class="header">
+                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=150&auto=format&fit=crop" class="avatar" @click="view = 'onboarding'">
+                <button class="icon-btn" @click="view = 'calendar'">∷</button>
             </div>
-            <div style="margin-bottom: 40px; font-size: 1.1rem; letter-spacing: 12px; font-weight: 300;">溫柔覺醒</div>
-            <button class="btn-ui" @click="confirmEnd">結束冥想</button>
-            <button class="btn-ui" style="font-size: 0.65rem; color: #999;" @click="reset">回到首頁</button>
-            <div class="live-counter-active">目前共有 {{ liveCount }} 位使用者正與您一同冥想</div>
+            
+            <div class="greeting">Hello, 使用者 ☺</div>
+            <h1 class="main-title">Your healthy<br>training plan<br>is ready</h1>
+            
+            <div class="action-row">
+                <button class="btn-black">Add to Calendar</button>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div class="icon-btn" style="width:30px; height:30px; font-size:0.8rem;">⠇</div>
+                    <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=150&auto=format&fit=crop" style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
+                </div>
+            </div>
+
+            <div class="grid-cards">
+                <div class="glass-card card-small">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div class="card-icon">🧘</div>
+                        <span style="font-size:0.9rem;">Yoga</span>
+                    </div>
+                    <div>
+                        <div class="card-time">45 min</div>
+                        <div class="card-desc">Mon, Thu, Fri</div>
+                    </div>
+                </div>
+                <div class="glass-card card-small">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div class="card-icon">🌬️</div>
+                        <span style="font-size:0.9rem;">Breath</span>
+                    </div>
+                    <div>
+                        <div class="card-time">15 min</div>
+                        <div class="card-desc">Every Morning</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card card-wide">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div class="card-icon" style="margin:0;">🪷</div>
+                    <div>
+                        <div style="font-size:0.9rem; margin-bottom:2px;">Meditation</div>
+                        <div class="card-desc">Every Evening</div>
+                    </div>
+                </div>
+                <div class="card-time" style="margin:0; font-size: 1.2rem;">30 min</div>
+            </div>
         </div>
     </transition>
 
     <transition name="fade">
-        <div v-if="view === 'finish'" class="finish-screen">
-            <svg v-if="growthStage === 'seed'" class="growth-stage-icon" viewBox="0 0 24 24"><path d="M12,2C12,2 4,10 4,15C4,19.42 7.58,23 12,23C16.42,23 20,19.42 20,15C20,10 12,2 12,2M12,21C8.69,21 6,18.31 6,15C6,12.33 10.33,7.33 12,5.33C13.67,7.33 18,12.33 18,15C18,18.31 15.31,21 12,21Z"/></svg>
-            <svg v-if="growthStage === 'sprout'" class="growth-stage-icon" viewBox="0 0 24 24"><path d="M2,22C2,22 3,18 7,15C11,12 10,8 10,8C10,8 11,9 11,12C11,15 9,19 2,22M22,22C22,22 21,18 17,15C13,12 14,8 14,8C14,8 13,9 13,12C13,15 15,19 22,22M12,22V15C12,15 12,9 12,5C12,1 12,1 12,1"/></svg>
-            <svg v-if="growthStage === 'thrive'" class="growth-stage-icon" viewBox="0 0 24 24"><path d="M12,2L9,7H11V13H13V7H15L12,2M13,14.29C13.88,13.9 14.88,13.84 15.8,14.11C17.7,14.67 18.81,16.66 18.25,18.56C17.69,20.45 15.71,21.57 13.81,21C12.89,20.73 12.15,20.14 11.69,19.4C11.23,20.14 10.5,20.73 9.58,21C7.68,21.57 5.7,20.45 5.14,18.56C4.58,16.66 5.69,14.67 7.59,14.11C8.5,13.84 9.5,13.9 10.39,14.29C10.82,13.5 11.45,12.85 12,12.44C12.55,12.85 13.18,13.5 13.61,14.29Z"/></svg>
-            <div style="font-size: 1.1rem; letter-spacing: 12px; margin-bottom: 10px;">溫柔覺醒：{{ stageName }}</div>
-            <div style="font-size: 0.75rem; color: #888; letter-spacing: 4px; margin-bottom: 50px; text-align: center; line-height: 1.8;">{{ stageDesc }}</div>
-            <button class="btn-ui" @click="playAgain">再次啟動</button>
-            <button class="btn-ui" style="font-size: 0.65rem; color: #999;" @click="reset">回到首頁</button>
+        <div v-if="view === 'calendar'" class="calendar-view">
+            <div class="header">
+                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=150&auto=format&fit=crop" class="avatar" @click="view = 'dashboard'">
+                <button class="icon-btn">∷</button>
+            </div>
+
+            <h1 class="cal-title">My<br>Calendar</h1>
+
+            <div class="cal-controls">
+                <div class="month-selector">April <span>📅</span></div>
+                <div class="toggle-group">
+                    <button class="toggle-btn active">All <span style="background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:10px; margin-left:4px;">3</span></button>
+                    <button class="toggle-btn">Yoga</button>
+                </div>
+            </div>
+
+            <table class="calendar-grid">
+                <thead>
+                    <tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><div class="day-node inactive">1</div></td>
+                        <td><div class="day-node">2</div></td>
+                        <td><div class="day-node">3</div></td>
+                        <td><div class="day-node">4</div></td>
+                        <td><div class="day-node">5</div></td>
+                        <td><div class="day-node">6</div></td>
+                        <td><div class="day-node">7</div></td>
+                    </tr>
+                    <tr>
+                        <td><div class="day-node active-dark">8</div></td>
+                        <td><div class="day-node">9</div></td>
+                        <td><div class="day-node">10</div></td>
+                        <td><div class="day-node active-dark">11</div></td>
+                        <td><div class="day-node">12</div></td>
+                        <td><div class="day-node">13</div></td>
+                        <td><div class="day-node inactive">14</div></td>
+                    </tr>
+                    <tr>
+                        <td><div class="day-node">15</div></td>
+                        <td><div class="day-node">16</div></td>
+                        <td><div class="day-node inactive">17</div></td>
+                        <td><div class="day-node">18</div></td>
+                        <td><div class="day-node">19</div></td>
+                        <td><div class="day-node">20</div></td>
+                        <td><div class="day-node">21</div></td>
+                    </tr>
+                    <tr>
+                        <td><div class="day-node">22</div></td>
+                        <td><div class="day-node">23</div></td>
+                        <td><div class="day-node">24</div></td>
+                        <td><div class="day-node">25</div></td>
+                        <td><div class="day-node active-dark">26</div></td>
+                        <td><div class="day-node">27</div></td>
+                        <td><div class="day-node">28</div></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="glass-card trainer-card">
+                <div class="trainer-info">
+                    <div style="font-size:0.8rem; margin-bottom:10px;">11:00 <span style="font-size:0.6rem;">AM</span><br><span style="color:var(--text-light)">Flower Yoga Studio</span></div>
+                    <h4>Amanda</h4>
+                    <p>Your Trainer</p>
+                </div>
+                <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=200&auto=format&fit=crop" class="trainer-img">
+            </div>
         </div>
     </transition>
-
-    <audio ref="audioPlayer" playsinline></audio>
 </div>
 
 <script>
-    const { createApp, ref, computed, onMounted } = Vue;
+    const { createApp, ref } = Vue;
     createApp({
         setup() {
-            const view = ref('virtues');
-            const selectedMode = ref(null);
-            const timer = ref(900);
-            const sessions = ref(Number(localStorage.getItem('rd_count') || 0));
-            const liveCount = ref(128); 
-            const audioPlayer = ref(null);
-            const envStyle = ref({});
-            let interval = null;
+            // 控制目前顯示的頁面：onboarding, dashboard, calendar
+            const view = ref('onboarding'); 
 
-            // --- 音頻路徑設定 ---
-            // 建議將檔案放在 Repo 的 public/music-ren-pure.mp3
-            // 或者直接使用 GitHub Raw 連結 (需更換為您的真實網址)
-            const MP3_URL = "./music-ren-pure.mp3"; 
-
-            const virtues = [{ eng: 'Righteousness', class: 'v-yi' }, { eng: 'Propriety', class: 'v-li' }, { eng: 'Wisdom', class: 'v-zhi' }, { eng: 'Integrity', class: 'v-xin' }];
-            const growthStage = computed(() => sessions.value <= 7 ? 'seed' : (sessions.value <= 21 ? 'sprout' : 'thrive'));
-            const stageName = computed(() => ({ seed: '播種', sprout: '發芽', thrive: '茁壯' }[growthStage.value]));
-            const stageDesc = computed(() => ({ seed: '埋下善念，感受土地的包容。', sprout: '突破自我，展現向上的生命力。', thrive: '成蔭護人，建立與萬物的連結。' }[growthStage.value]));
-
-            const selectVirtue = (name) => { if(name === '仁') view.value = 'selection'; };
-
-            const confirmStart = () => {
-                // 立即解鎖音頻
-                audioPlayer.value.src = MP3_URL;
-                audioPlayer.value.loop = true;
-                const playPromise = audioPlayer.value.play();
-
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        view.value = 'active';
-                        startTimer();
-                    }).catch(() => {
-                        view.value = 'active';
-                        startTimer();
-                    });
-                }
-            };
-
-            const startTimer = () => {
-                timer.value = 900;
-                if (interval) clearInterval(interval);
-                interval = setInterval(() => {
-                    if (timer.value > 0) {
-                        timer.value--;
-                        // 倒數 3 秒淡出
-                        if (timer.value <= 3) audioPlayer.value.volume = Math.max(0, audioPlayer.value.volume - 0.3);
-                    } else handleFinish();
-                }, 1000);
-            };
-
-            const handleFinish = () => {
-                clearInterval(interval);
-                sessions.value++;
-                localStorage.setItem('rd_count', sessions.value);
-                if (audioPlayer.value) {
-                    audioPlayer.value.pause();
-                    audioPlayer.value.src = "";
-                    audioPlayer.value.load();
-                }
-                view.value = 'finish';
-            };
-
-            const playAgain = () => { confirmStart(); };
-            const reset = () => {
-                clearInterval(interval);
-                view.value = 'virtues';
-                selectedMode.value = null;
-                if (audioPlayer.value) { audioPlayer.value.pause(); audioPlayer.value.src = ""; }
-            };
-
-            const formatTime = (s) => `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
-            const confirmEnd = () => { if(confirm("確定結束？")) reset(); };
-
-            onMounted(() => {
-                const now = new Date();
-                const month = now.getMonth() + 1;
-                const hour = now.getHours();
-                let paper = (month === 2) ? '#f2f5f0' : '#ebecf0';
-                let blob = (hour >= 5 && hour < 11) ? 'rgba(100, 150, 255, 0.1)' : (hour >= 17 && hour < 20 ? 'rgba(255, 120, 50, 0.1)' : 'rgba(49, 49, 49, 0.12)');
-                envStyle.value = { '--paper': paper, '--blob-color': blob };
-                setInterval(() => { liveCount.value += (Math.floor(Math.random() * 3) - 1); }, 8000);
-            });
-
-            return { view, virtues, selectedMode, timer, sessions, liveCount, envStyle, growthStage, stageName, stageDesc, selectVirtue, confirmStart, playAgain, formatTime, confirmEnd, reset, audioPlayer };
+            return { view };
         }
     }).mount('#app');
 </script>
 </body>
 </html>
-
