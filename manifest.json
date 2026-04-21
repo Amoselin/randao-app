@@ -1,22 +1,21 @@
 {
+  "name": "燃道 RANDAO · 五常·煉系列",
   "short_name": "燃道",
-  "name": "燃道 Rendao - 五常冥想體驗",
+  "description": "五常能量檢測與冥想調律系統",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
   "icons": [
     {
-      "src": "logo-192.png",
-      "type": "image/png",
-      "sizes": "192x192"
+      "src": "/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
     },
     {
-      "src": "logo-512.png",
-      "type": "image/png",
-      "sizes": "512x512"
+      "src": "/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
-  ],
-  "start_url": "/?source=pwa",
-  "background_color": "#ffffff",
-  "display": "standalone",
-  "scope": "/",
-  "theme_color": "#333333",
-  "description": "結合嗅覺與靜心的儒家五常冥想引導"
+  ]
 }
