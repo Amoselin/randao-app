@@ -1,368 +1,1265 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>燃道｜冥想</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0a0a0a">
+<title>燃道 RANDAO · 五常·煉系列</title>
+<link rel="manifest" href="/manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+
 <style>
-  /* 原始樣式表 */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0a0a0a;
+  --bg2:#111111;
+  --bg3:#1a1a1a;
+  --surface:rgba(255,255,255,0.04);
+  --border:rgba(255,255,255,0.07);
+  --border-hi:rgba(255,255,255,0.15);
+  --text:#e8e2d9;
+  --text2:#7a7570;
+  --text3:#3d3b38;
+  --gold:#c8a96e;
+  --gold2:#8b6c3e;
+  --gold-dim:rgba(200,169,110,0.12);
+  --serif:'Noto Serif TC',serif;
+  --italic:'Cormorant Garamond',serif;
+  --mono:'DM Mono',monospace;
+}
 
-  :root {
-    --brand-bg: #f4eee8;
-    --brand-text: #1b1714;
-    --med-bg: #d2c7a9;
-    --med-primary: #2d3e2a;
-    --med-gold: #b3a04a;
-  }
+html,body{
+  width:100%;min-height:100%;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--mono);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
 
-  html, body {
-    width: 100%; height: 100%; overflow: hidden;
-    font-family: 'Noto Sans TC', sans-serif;
-    background: var(--brand-bg);
-  }
+/* ─────────── NOISE LAYER ─────────── */
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9999;opacity:1;
+}
 
-  #app {
-    width: 100%; height: 100vh;
-    position: relative; overflow: hidden;
-  }
+/* ─────────── SCREENS ─────────── */
+.screen{display:none;width:100%;min-height:100vh;}
+.screen.active{display:flex;flex-direction:column;}
 
-  .page {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: 2.5rem;
-    transition: opacity 0.8s cubic-bezier(0.4,0,0.2,1),
-                transform 0.8s cubic-bezier(0.4,0,0.2,1);
-  }
-  .page.hidden   { opacity: 0; pointer-events: none; transform: translateY(24px); }
-  .page.visible  { opacity: 1; pointer-events: all;  transform: translateY(0); }
+/* ══════════════════════════════════
+   INTRO SCREEN
+══════════════════════════════════ */
+#s-intro{
+  align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
 
-  .serif { font-family: 'Noto Serif TC', Georgia, serif; }
+.intro-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 50% at 50% 55%, rgba(200,169,110,0.06) 0%, transparent 70%);
+}
 
-  /* HOME */
-  #home { background: var(--brand-bg); }
-  .breath-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    background: var(--brand-text); opacity: 0.35;
-    animation: breathe 4s ease-in-out infinite;
-    margin-bottom: 2.2rem;
-  }
-  @keyframes breathe {
-    0%, 100% { transform: scale(1);   opacity: 0.25; }
-    50%       { transform: scale(2.2); opacity: 0.65; }
-  }
+.intro-lines{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px);
+  background-size:80px 80px;
+  animation:gridFade 3s ease forwards;
+}
+@keyframes gridFade{from{opacity:0}to{opacity:1}}
 
-  .home-title {
-    font-size: clamp(18px, 4vw, 24px);
-    letter-spacing: 0.18em; color: var(--brand-text);
-    text-align: center; font-weight: 400; line-height: 2;
-    margin-bottom: 0.5rem;
-  }
-  .home-sub {
-    font-size: 13px; letter-spacing: 0.1em;
-    color: var(--brand-text); opacity: 0.5;
-    text-align: center; font-weight: 300;
-    font-style: italic; margin-bottom: 2.8rem;
-  }
+.intro-center{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;
+  align-items:center;gap:0;
+  text-align:center;
+}
 
-  /* Buttons */
-  .btn-outline {
-    border: 1px solid var(--brand-text); background: transparent;
-    color: var(--brand-text); padding: 11px 36px;
-    font-size: 13px; letter-spacing: 0.12em;
-    cursor: pointer; border-radius: 40px;
-    transition: background 0.3s, color 0.3s, transform 0.15s;
-  }
-  .btn-outline:hover  { background: var(--brand-text); color: var(--brand-bg); }
-  .btn-outline:active { transform: scale(0.96); }
+/* Flame SVG animation */
+.flame-wrap{
+  width:56px;height:72px;
+  margin-bottom:32px;
+  opacity:0;
+  animation:fadeIn 0.8s ease 0.3s forwards;
+}
+@keyframes fadeIn{to{opacity:1}}
 
-  .btn-gold {
-    border: 1px solid var(--med-gold); background: transparent;
-    color: var(--med-gold); padding: 11px 32px;
-    font-size: 13px; letter-spacing: 0.12em;
-    cursor: pointer; border-radius: 40px;
-    transition: background 0.3s, color 0.3s, transform 0.15s;
-  }
-  .btn-gold:hover  { background: var(--med-gold); color: #f4eee8; }
-  .btn-dark {
-    border: 1px solid var(--med-primary); background: transparent;
-    color: var(--med-primary); padding: 11px 32px;
-    font-size: 13px; letter-spacing: 0.12em;
-    cursor: pointer; border-radius: 40px;
-    transition: background 0.3s, color 0.3s, transform 0.15s;
-  }
-  .btn-dark:hover  { background: var(--med-primary); color: var(--med-bg); }
+.flame-svg{
+  width:100%;height:100%;
+  animation:flicker 3s ease-in-out infinite;
+  transform-origin:50% 100%;
+}
+@keyframes flicker{
+  0%,100%{transform:scaleX(1) scaleY(1);}
+  25%{transform:scaleX(0.93) scaleY(1.03);}
+  50%{transform:scaleX(1.04) scaleY(0.97);}
+  75%{transform:scaleX(0.96) scaleY(1.02);}
+}
 
-  .btn-ghost {
-    border: none; background: transparent;
-    color: var(--med-primary); opacity: 0.45;
-    font-size: 12px; letter-spacing: 0.1em;
-    cursor: pointer; padding: 6px 16px;
-  }
+.intro-zh{
+  font-family:var(--serif);
+  font-size:clamp(52px,14vw,88px);
+  font-weight:700;
+  letter-spacing:0.12em;
+  color:var(--text);
+  line-height:1;
+  opacity:0;
+  animation:riseIn 1s cubic-bezier(0.16,1,0.3,1) 0.6s forwards;
+  position:relative;
+}
+.intro-zh::after{
+  content:'';
+  position:absolute;
+  bottom:-6px;left:10%;right:10%;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  opacity:0;
+  animation:lineReveal 0.8s ease 1.4s forwards;
+}
+@keyframes lineReveal{to{opacity:0.6}}
 
-  .back-btn {
-    border: none; background: transparent;
-    color: var(--brand-text); opacity: 0.4;
-    font-size: 12px; cursor: pointer; padding: 6px;
-  }
+@keyframes riseIn{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
+}
 
-  .count-label {
-    position: absolute; bottom: 1.8rem; left: 0; right: 0;
-    text-align: center; font-size: 11.5px;
-    color: var(--brand-text); opacity: 0.38;
-  }
+.intro-en{
+  font-family:var(--italic);
+  font-size:clamp(13px,3.5vw,18px);
+  font-weight:300;
+  letter-spacing:0.45em;
+  color:var(--text2);
+  margin-top:14px;
+  opacity:0;
+  animation:fadeIn 0.8s ease 1s forwards;
+}
 
-  /* SELECTION */
-  #selection { background: var(--brand-bg); }
-  .sel-hint { font-size: 11px; letter-spacing: 0.22em; color: var(--brand-text); opacity: 0.38; margin-bottom: 2rem; }
-  .card-select {
-    border: 1px solid rgba(27,23,20,0.18); border-radius: 18px;
-    padding: 2.8rem 3.5rem; cursor: pointer; text-align: center;
-    background: rgba(255,255,255,0.38);
-    transition: box-shadow 0.35s, transform 0.3s, background 0.3s;
-    margin-bottom: 2rem; max-width: 320px; width: 100%;
-  }
-  .card-select:hover { transform: translateY(-4px) scale(1.025); background: rgba(255,255,255,0.65); }
+.intro-tagline{
+  font-size:11px;
+  letter-spacing:0.2em;
+  color:var(--text3);
+  margin-top:28px;
+  opacity:0;
+  animation:fadeIn 0.8s ease 1.4s forwards;
+}
 
-  .card-tag  { font-size: 10.5px; letter-spacing: 0.22em; opacity: 0.4; margin-bottom: 0.7rem; }
-  .card-name { font-size: 21px; color: var(--med-primary); font-weight: 500; margin-bottom: 0.45rem; }
-  .card-sub  { font-size: 12px; opacity: 0.55; }
+/* ─── home buttons appear after 3s ─── */
+.home-buttons{
+  display:flex;
+  gap:16px;
+  margin-top:56px;
+  opacity:0;
+  transform:translateY(12px);
+  animation:riseIn 0.9s cubic-bezier(0.16,1,0.3,1) 2.8s forwards;
+}
 
-  /* MEDITATION */
-  #meditation { background: var(--med-bg); }
-  .ripple-wrap { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
-  .ripple { position: absolute; border-radius: 50%; border: 1px solid rgba(45,62,42,0.1); animation: rippleOut 9s ease-out infinite; }
-  @keyframes rippleOut {
-    0%   { transform: scale(0.4); opacity: 0.55; }
-    100% { transform: scale(3.8); opacity: 0; }
-  }
-  #meditation > * { position: relative; z-index: 1; }
-  .med-label { font-size: 11px; letter-spacing: 0.26em; color: var(--med-primary); opacity: 0.52; margin-bottom: 1.6rem; }
-  .timer-wrap { position: relative; width: 230px; height: 230px; margin-bottom: 2.2rem; }
-  .timer-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .timer-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 46px; color: var(--med-primary); font-weight: 300; }
+.btn-home{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:0.2em;
+  text-transform:uppercase;
+  padding:15px 32px;
+  border:1px solid var(--border-hi);
+  background:transparent;
+  color:var(--text2);
+  cursor:pointer;
+  transition:all 0.3s ease;
+  position:relative;
+  overflow:hidden;
+  white-space:nowrap;
+}
+.btn-home::before{
+  content:'';
+  position:absolute;
+  bottom:0;left:0;
+  width:100%;height:0;
+  background:var(--gold);
+  transition:height 0.3s ease;
+  z-index:0;
+}
+.btn-home span{position:relative;z-index:1;transition:color 0.3s ease;}
+.btn-home:hover{border-color:var(--gold);}
+.btn-home:hover::before{height:100%;}
+.btn-home:hover span{color:var(--bg);}
 
-  .med-btns { display: flex; flex-direction: column; align-items: center; gap: 0.8rem; }
+.btn-home.primary{
+  background:var(--gold-dim);
+  border-color:rgba(200,169,110,0.35);
+  color:var(--gold);
+}
+.btn-home.primary span{color:var(--gold);}
+.btn-home.primary:hover span{color:var(--bg);}
 
-  /* Overlay */
-  .overlay {
-    position: absolute; inset: 0; z-index: 20; background: rgba(210,199,169,0.9);
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.8rem;
-    transition: opacity 0.4s; backdrop-filter: blur(2px);
-  }
-  .overlay.hidden { opacity: 0; pointer-events: none; }
-  .overlay-text { font-size: 16px; color: var(--med-primary); text-align: center; line-height: 1.8; }
+.intro-hint{
+  font-size:10px;
+  letter-spacing:0.12em;
+  color:var(--text3);
+  margin-top:16px;
+  opacity:0;
+  animation:fadeIn 0.8s ease 3.4s forwards;
+  max-width:280px;
+  line-height:1.8;
+  text-align:center;
+}
 
-  /* COMPLETION */
-  #completion { background: var(--med-bg); }
-  .done-wrap { text-align: center; margin-bottom: 2.8rem; }
-  .done-main { font-size: clamp(22px, 5vw, 30px); color: var(--med-gold); letter-spacing: 0.18em; animation: fadeUpGold 1.3s ease forwards; }
-  .done-sub { font-size: 13px; color: var(--med-primary); opacity: 0; margin-top: 0.6rem; animation: fadeUpSub 1.3s ease 0.4s forwards; }
-  @keyframes fadeUpGold { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes fadeUpSub { from { opacity: 0; transform: translateY(14px); } to { opacity: 0.5; transform: translateY(0); } }
+/* ══════════════════════════════════
+   SHARED NAV
+══════════════════════════════════ */
+.top-nav{
+  position:fixed;top:0;left:0;right:0;
+  height:52px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;
+  background:rgba(10,10,10,0.88);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  z-index:500;
+}
+.nav-brand{
+  font-family:var(--serif);
+  font-size:16px;
+  font-weight:600;
+  letter-spacing:0.1em;
+  color:var(--text);
+  cursor:pointer;
+}
+.nav-back{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:0.18em;
+  color:var(--text2);
+  background:none;border:none;
+  cursor:pointer;
+  display:flex;align-items:center;gap:8px;
+  transition:color 0.2s;
+  text-transform:uppercase;
+}
+.nav-back:hover{color:var(--text);}
+.nav-back svg{width:14px;height:14px;}
+
+/* ══════════════════════════════════
+   ASSESSMENT SCREEN
+══════════════════════════════════ */
+#s-assessment{padding-top:52px;align-items:stretch;}
+
+.assess-progress{
+  position:sticky;top:52px;z-index:100;
+  background:rgba(10,10,10,0.9);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border);
+  padding:12px 24px;
+}
+.assess-prog-row{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:8px;
+}
+.prog-label{font-size:10px;letter-spacing:0.15em;color:var(--text3);text-transform:uppercase;}
+.prog-count{font-size:11px;color:var(--gold);font-family:var(--mono);}
+.prog-track{height:1px;background:var(--border);position:relative;}
+.prog-fill{
+  position:absolute;left:0;top:0;bottom:0;
+  background:linear-gradient(90deg,var(--gold2),var(--gold));
+  transition:width 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+
+.assess-body{flex:1;max-width:600px;width:100%;margin:0 auto;padding:40px 24px 120px;}
+
+.q-card{
+  animation:qSlideIn 0.45s cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes qSlideIn{
+  from{opacity:0;transform:translateX(16px);}
+  to{opacity:1;transform:translateX(0);}
+}
+
+.q-meta{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:20px;
+}
+.q-num{
+  font-family:var(--mono);font-size:10px;
+  letter-spacing:0.2em;color:var(--gold);
+}
+.q-tag{
+  font-size:10px;letter-spacing:0.12em;
+  color:var(--text3);text-transform:uppercase;
+  padding-left:12px;
+  border-left:1px solid var(--border-hi);
+}
+.q-text{
+  font-family:var(--serif);
+  font-size:18px;font-weight:400;
+  color:var(--text);line-height:1.65;
+  margin-bottom:28px;
+}
+.opts{display:flex;flex-direction:column;gap:6px;}
+
+.opt{
+  display:flex;align-items:flex-start;gap:14px;
+  width:100%;text-align:left;
+  background:transparent;
+  border:1px solid var(--border);
+  padding:14px 16px;
+  cursor:pointer;
+  color:var(--text2);
+  font-family:var(--mono);
+  font-size:12px;line-height:1.6;
+  letter-spacing:0.01em;
+  transition:border-color 0.2s,background 0.2s,color 0.2s;
+}
+.opt:hover{
+  border-color:var(--border-hi);
+  color:var(--text);
+  background:var(--surface);
+}
+.opt.sel{
+  border-color:var(--gold);
+  color:var(--text);
+  background:var(--gold-dim);
+}
+.opt-ltr{
+  flex-shrink:0;
+  width:22px;height:22px;
+  border:1px solid currentColor;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;opacity:0.5;
+  transition:opacity 0.2s,background 0.2s,color 0.2s;
+  margin-top:1px;
+}
+.opt.sel .opt-ltr{
+  background:var(--gold);
+  border-color:var(--gold);
+  color:var(--bg);opacity:1;
+}
+
+.assess-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(10,10,10,0.95);
+  backdrop-filter:blur(12px);
+  border-top:1px solid var(--border);
+  padding:14px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  z-index:200;
+}
+.dots{display:flex;gap:5px;align-items:center;}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--text3);transition:all 0.25s;}
+.dot.done{background:var(--gold2);}
+.dot.cur{background:var(--gold);width:14px;border-radius:99px;}
+
+.btn-prev,.btn-next{
+  font-family:var(--mono);font-size:11px;
+  letter-spacing:0.15em;text-transform:uppercase;
+  padding:10px 22px;cursor:pointer;
+  border:1px solid var(--border-hi);
+  background:transparent;color:var(--text2);
+  transition:all 0.2s;
+}
+.btn-prev:hover:not(:disabled){color:var(--text);border-color:var(--text);}
+.btn-prev:disabled{opacity:0.2;cursor:not-allowed;}
+.btn-next{background:var(--gold);border-color:var(--gold);color:var(--bg);}
+.btn-next:disabled{opacity:0.3;cursor:not-allowed;}
+.btn-next:not(:disabled):hover{background:#d4b878;border-color:#d4b878;}
+
+/* ─── RESULT ─── */
+#s-result{padding-top:52px;align-items:stretch;}
+
+.result-body{max-width:600px;width:100%;margin:0 auto;padding:48px 24px 80px;}
+
+.res-eyebrow{
+  font-size:10px;letter-spacing:0.25em;
+  color:var(--text3);text-transform:uppercase;
+  text-align:center;margin-bottom:12px;
+}
+.res-name{
+  font-family:var(--italic);
+  font-size:clamp(32px,8vw,52px);
+  font-weight:300;font-style:italic;
+  text-align:center;color:var(--text);
+  margin-bottom:4px;line-height:1.15;
+}
+.res-id{
+  font-size:11px;letter-spacing:0.15em;
+  color:var(--text3);text-align:center;
+  margin-bottom:48px;
+}
+
+/* candle result card */
+.res-candle{
+  border:1px solid var(--border);
+  margin-bottom:12px;
+  position:relative;overflow:hidden;
+}
+.res-candle::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--candle-color,var(--gold)),transparent);
+}
+.res-top{
+  padding:28px;border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;gap:18px;
+}
+.res-icon{
+  width:50px;height:50px;flex-shrink:0;
+  border:1px solid var(--border-hi);
+  background:var(--bg3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;
+}
+.res-candle-name{
+  font-family:var(--serif);font-size:20px;
+  font-weight:600;color:var(--text);margin-bottom:4px;
+}
+.res-candle-id{
+  font-size:10px;letter-spacing:0.15em;
+  color:var(--text3);margin-bottom:6px;
+}
+.res-tagline{font-size:12px;color:var(--text2);line-height:1.65;font-style:italic;}
+
+.res-section{padding:22px 28px;border-bottom:1px solid var(--border);}
+.res-section:last-child{border-bottom:none;}
+.res-sec-label{
+  font-size:10px;letter-spacing:0.2em;
+  color:var(--text3);text-transform:uppercase;margin-bottom:14px;
+}
+.scent-row{display:flex;flex-direction:column;gap:12px;}
+.scent-item{display:flex;gap:14px;align-items:flex-start;}
+.scent-phase{
+  font-size:10px;letter-spacing:0.1em;
+  color:var(--gold2);text-transform:uppercase;
+  width:34px;flex-shrink:0;padding-top:2px;
+}
+.scent-desc{font-size:13px;color:var(--text2);line-height:1.6;}
+
+.sym-list{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;}
+.sym{
+  font-size:11px;color:var(--text3);
+  border:1px solid var(--border);
+  padding:4px 13px;letter-spacing:0.04em;
+}
+
+/* edi bars */
+.edi-wrap{
+  border:1px solid var(--border);
+  background:var(--bg2);
+  padding:28px;margin-bottom:12px;
+}
+.edi-title{
+  font-family:var(--serif);font-size:14px;
+  color:var(--text2);margin-bottom:24px;
+  display:flex;align-items:center;gap:12px;
+}
+.edi-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.bar-row{margin-bottom:16px;}
+.bar-lr{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+.bar-el{font-family:var(--serif);font-size:13px;color:var(--text2);}
+.bar-sc{font-family:var(--mono);font-size:11px;color:var(--text3);}
+.bar-track{height:2px;background:var(--border);position:relative;}
+.bar-mid{position:absolute;left:50%;top:-4px;bottom:-4px;width:1px;background:var(--text3);transform:translateX(-50%);}
+.bar-fill{position:absolute;top:0;height:100%;transition:width 0.8s cubic-bezier(0.4,0,0.2,1),left 0.8s cubic-bezier(0.4,0,0.2,1);}
+.bar-ends{display:flex;justify-content:space-between;margin-top:5px;font-size:10px;color:var(--text3);letter-spacing:0.06em;}
+
+/* res actions */
+.res-actions{display:flex;flex-direction:column;gap:10px;margin-top:32px;}
+.btn-meditate{
+  width:100%;
+  font-family:var(--mono);font-size:11px;
+  letter-spacing:0.2em;text-transform:uppercase;
+  padding:16px;cursor:pointer;
+  background:var(--gold-dim);
+  border:1px solid rgba(200,169,110,0.3);
+  color:var(--gold);
+  transition:all 0.25s;
+}
+.btn-meditate:hover{background:var(--gold);color:var(--bg);}
+.btn-redo{
+  width:100%;
+  font-family:var(--mono);font-size:10px;
+  letter-spacing:0.18em;text-transform:uppercase;
+  padding:12px;cursor:pointer;
+  background:transparent;
+  border:1px solid var(--border);
+  color:var(--text3);
+  transition:all 0.2s;
+}
+.btn-redo:hover{color:var(--text2);border-color:var(--border-hi);}
+
+/* ══════════════════════════════════
+   MEDITATION SCREEN
+══════════════════════════════════ */
+#s-meditation{padding-top:52px;align-items:stretch;}
+
+.med-body{max-width:600px;width:100%;margin:0 auto;padding:48px 24px 80px;}
+
+.med-header{
+  text-align:center;margin-bottom:48px;
+}
+.med-eyebrow{
+  font-size:10px;letter-spacing:0.25em;
+  color:var(--text3);text-transform:uppercase;margin-bottom:12px;
+}
+.med-title{
+  font-family:var(--italic);
+  font-size:clamp(28px,7vw,44px);
+  font-weight:300;font-style:italic;
+  color:var(--text);margin-bottom:8px;
+}
+.med-sub{font-size:12px;color:var(--text3);letter-spacing:0.08em;line-height:1.8;}
+
+/* track cards */
+.track-list{display:flex;flex-direction:column;gap:8px;margin-bottom:32px;}
+
+.track-card{
+  border:1px solid var(--border);
+  background:var(--bg2);
+  padding:20px 22px;
+  cursor:pointer;
+  transition:border-color 0.25s,background 0.25s;
+  position:relative;overflow:hidden;
+}
+.track-card::before{
+  content:'';
+  position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:var(--track-color,var(--gold));
+  opacity:0;
+  transition:opacity 0.25s;
+}
+.track-card:hover{border-color:var(--border-hi);background:var(--bg3);}
+.track-card:hover::before{opacity:0.6;}
+.track-card.active{border-color:rgba(200,169,110,0.3);background:var(--gold-dim);}
+.track-card.active::before{opacity:1;}
+.track-card.locked{opacity:0.35;cursor:not-allowed;}
+
+.track-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.track-name{font-family:var(--serif);font-size:16px;font-weight:600;color:var(--text);}
+.track-badge{
+  font-size:10px;letter-spacing:0.12em;
+  padding:3px 10px;border:1px solid var(--border-hi);
+  color:var(--text3);
+}
+.track-badge.avail{
+  border-color:rgba(200,169,110,0.3);
+  color:var(--gold2);
+  background:var(--gold-dim);
+}
+.track-en{font-size:11px;letter-spacing:0.1em;color:var(--text3);margin-bottom:6px;}
+.track-desc{font-size:12px;color:var(--text2);line-height:1.6;}
+
+/* ─── PLAYER ─── */
+.player-wrap{
+  border:1px solid var(--border);
+  background:var(--bg2);
+  padding:28px;
+  position:relative;overflow:hidden;
+}
+.player-wrap::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  opacity:0.4;
+}
+
+.player-track-name{
+  font-family:var(--serif);font-size:18px;font-weight:600;
+  color:var(--text);margin-bottom:4px;
+}
+.player-track-sub{font-size:11px;letter-spacing:0.1em;color:var(--text3);margin-bottom:28px;}
+
+/* waveform visual */
+.wave-viz{
+  height:48px;margin-bottom:20px;
+  display:flex;align-items:center;gap:2px;
+}
+.wave-bar{
+  flex:1;background:var(--border-hi);
+  border-radius:1px;
+  transform-origin:center;
+  transition:background 0.3s;
+}
+.wave-bar.playing{
+  animation:wavePulse 1s ease-in-out infinite;
+  background:var(--gold2);
+}
+@keyframes wavePulse{
+  0%,100%{transform:scaleY(0.4);}
+  50%{transform:scaleY(1);}
+}
+
+/* progress */
+.player-prog-wrap{margin-bottom:16px;cursor:pointer;}
+.player-prog-track{
+  height:2px;background:var(--border);
+  position:relative;border-radius:1px;
+}
+.player-prog-fill{
+  position:absolute;left:0;top:0;bottom:0;
+  background:linear-gradient(90deg,var(--gold2),var(--gold));
+  border-radius:1px;
+  transition:width 0.5s linear;
+  pointer-events:none;
+}
+.player-times{
+  display:flex;justify-content:space-between;
+  font-size:10px;color:var(--text3);margin-top:8px;
+  font-family:var(--mono);letter-spacing:0.06em;
+}
+
+/* controls */
+.player-controls{
+  display:flex;align-items:center;justify-content:center;
+  gap:24px;
+}
+.btn-play{
+  width:52px;height:52px;border-radius:50%;
+  background:var(--gold);border:none;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;
+  flex-shrink:0;
+}
+.btn-play:hover{background:#d4b878;transform:scale(1.05);}
+.btn-play svg{width:20px;height:20px;fill:var(--bg);margin-left:2px;}
+.btn-play.paused svg.icon-play{display:block;}
+.btn-play.paused svg.icon-pause{display:none;}
+.btn-play.playing svg.icon-play{display:none;}
+.btn-play.playing svg.icon-pause{display:block;}
+.btn-play.playing svg.icon-pause{margin-left:0;}
+
+.btn-skip{
+  width:36px;height:36px;
+  background:transparent;
+  border:1px solid var(--border-hi);
+  border-radius:50%;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color 0.2s;
+}
+.btn-skip:hover{border-color:var(--text2);}
+.btn-skip svg{width:14px;height:14px;fill:var(--text2);}
+
+/* volume */
+.player-vol{
+  display:flex;align-items:center;gap:10px;
+  margin-top:20px;padding-top:18px;
+  border-top:1px solid var(--border);
+}
+.vol-icon{width:14px;height:14px;flex-shrink:0;}
+.vol-icon svg{width:14px;height:14px;fill:var(--text3);}
+input[type=range].vol-slider{
+  flex:1;-webkit-appearance:none;
+  height:2px;background:var(--border);
+  border-radius:1px;outline:none;cursor:pointer;
+}
+input[type=range].vol-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:12px;height:12px;border-radius:50%;
+  background:var(--gold);cursor:pointer;
+}
+.vol-pct{
+  font-family:var(--mono);font-size:10px;
+  color:var(--text3);min-width:28px;text-align:right;
+}
+
+/* coming soon note */
+.coming-note{
+  text-align:center;margin-top:32px;
+  font-size:11px;color:var(--text3);
+  letter-spacing:0.08em;line-height:1.8;
+}
+.coming-note span{color:var(--gold2);}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:480px){
+  .home-buttons{flex-direction:column;gap:10px;width:100%;max-width:280px;}
+  .btn-home{width:100%;}
+  .intro-zh{letter-spacing:0.08em;}
+  .res-top{flex-direction:column;gap:14px;}
+}
 </style>
 </head>
 <body>
-<div id="app">
 
-  <audio id="meditationAudio" src="鬱而舒_專屬冥想音頻25mb.mp3" preload="auto"></audio>
+<!-- ══ INTRO ══ -->
+<div id="s-intro" class="screen active">
+  <div class="intro-bg"></div>
+  <div class="intro-lines"></div>
+  <div class="intro-center">
 
-  <div class="ripple-wrap" id="rippleWrap" style="display:none">
-    <div class="ripple" style="width:260px;height:260px;top:25%;left:25%;animation-delay:0s"></div>
-    <div class="ripple" style="width:200px;height:200px;top:30%;left:30%;animation-delay:3s"></div>
-    <div class="ripple" style="width:150px;height:150px;top:35%;left:35%;animation-delay:6s"></div>
-  </div>
-
-  <div id="home" class="page visible">
-    <div class="breath-dot"></div>
-    <h1 class="home-title serif">燃起微光，看見歸途</h1>
-    <p class="home-sub">A faint light kindled, the way back revealed.</p>
-    <button class="btn-outline" onclick="goTo('selection')">開始冥想</button>
-    <p class="count-label" id="countLabel"></p>
-  </div>
-
-  <div id="selection" class="page hidden">
-    <p class="sel-hint">選擇修行方式</p>
-    <div class="card-select" onclick="startMeditation()">
-      <p class="card-tag">五常·煉</p>
-      <p class="card-name serif">鬱而舒</p>
-      <p class="card-sub">沉浸冥想 (自動匹配音樂長度)</p>
-    </div>
-    <button class="back-btn" onclick="goTo('home')">← 返回</button>
-  </div>
-
-  <div id="meditation" class="page hidden">
-    <p class="med-label">五常·煉｜鬱而舒</p>
-    <div class="timer-wrap">
-      <svg class="timer-svg" viewBox="0 0 230 230">
-        <circle cx="115" cy="115" r="104" fill="none" stroke="rgba(45,62,42,0.1)" stroke-width="2.5"/>
-        <circle id="progressRing" cx="115" cy="115" r="104" fill="none" stroke="#b3a04a" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="653.7" stroke-dashoffset="0" transform="rotate(-90 115 115)"/>
+    <!-- flame -->
+    <div class="flame-wrap">
+      <svg class="flame-svg" viewBox="0 0 56 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M28 68C28 68 6 54 6 36C6 24 14 14 22 8C22 8 18 20 26 26C26 26 22 16 30 10C30 10 26 22 34 28C34 28 30 20 38 14C38 14 50 24 50 38C50 56 28 68 28 68Z" fill="url(#fg1)"/>
+        <path d="M28 60C28 60 16 50 16 38C16 30 22 24 28 20C28 20 24 28 30 32C30 32 28 26 34 22C34 22 40 30 38 40C36 48 28 60 28 60Z" fill="url(#fg2)" opacity="0.7"/>
+        <path d="M28 52C28 52 22 46 22 40C22 36 25 32 28 30C28 30 26 34 30 36C30 36 32 32 34 30C34 30 36 36 34 42C32 48 28 52 28 52Z" fill="#e8d4a0" opacity="0.5"/>
+        <defs>
+          <linearGradient id="fg1" x1="28" y1="68" x2="28" y2="8" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#c8a96e"/>
+            <stop offset="60%" stop-color="#e8c070"/>
+            <stop offset="100%" stop-color="#fff4e0" stop-opacity="0.3"/>
+          </linearGradient>
+          <linearGradient id="fg2" x1="28" y1="60" x2="28" y2="20" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#a07848"/>
+            <stop offset="100%" stop-color="#f0e0a0" stop-opacity="0.4"/>
+          </linearGradient>
+        </defs>
       </svg>
-      <div class="timer-text serif" id="timerDisplay">--:--</div>
-    </div>
-    <div class="med-btns">
-      <button class="btn-gold" id="pauseBtn" onclick="togglePause()">暫停冥想</button>
-      <button class="btn-ghost" onclick="showStopConfirm()">停止冥想</button>
     </div>
 
-    <div class="overlay hidden" id="stopOverlay">
-      <p class="overlay-text serif">確定要停止此次修行？<br><span style="font-size:12px;opacity:0.6;">時間將重置，累積不計入</span></p>
-      <div class="overlay-btns">
-        <button class="btn-gold" onclick="confirmStop()">確認停止</button>
-        <button class="btn-ghost" style="opacity:0.6;color:var(--med-primary)" onclick="hideStopConfirm()">繼續修行</button>
+    <h1 class="intro-zh">燃 道</h1>
+    <p class="intro-en">R À N D A O</p>
+    <p class="intro-tagline">五常·煉系列 &nbsp;·&nbsp; 冥想蠟燭</p>
+
+    <div class="home-buttons">
+      <button class="btn-home" onclick="goAssess()"><span>進行檢測</span></button>
+      <button class="btn-home primary" onclick="goMeditate()"><span>開始調律</span></button>
+    </div>
+
+    <p class="intro-hint">初次使用？建議先進行五常能量檢測<br>找到屬於你此刻的蠟燭</p>
+  </div>
+</div>
+
+<!-- ══ ASSESSMENT ══ -->
+<div id="s-assessment" class="screen">
+  <nav class="top-nav">
+    <button class="nav-back" onclick="goHome()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M5 12l7-7M5 12l7 7"/></svg>
+      返回
+    </button>
+    <span class="nav-brand">燃道</span>
+    <span style="width:60px"></span>
+  </nav>
+
+  <div class="assess-progress">
+    <div class="assess-prog-row">
+      <span class="prog-label">五常能量檢測</span>
+      <span class="prog-count" id="prog-count">1 / 10</span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:10%"></div></div>
+  </div>
+
+  <div class="assess-body">
+    <div id="q-area"></div>
+  </div>
+
+  <div class="assess-nav">
+    <button class="btn-prev" id="btn-prev" onclick="prevQ()" disabled>← 上一題</button>
+    <div class="dots" id="dots"></div>
+    <button class="btn-next" id="btn-next" onclick="nextQ()" disabled>下一題 →</button>
+  </div>
+</div>
+
+<!-- ══ RESULT ══ -->
+<div id="s-result" class="screen">
+  <nav class="top-nav">
+    <button class="nav-back" onclick="goHome()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M5 12l7-7M5 12l7 7"/></svg>
+      返回
+    </button>
+    <span class="nav-brand">燃道</span>
+    <span style="width:60px"></span>
+  </nav>
+  <div class="result-body">
+    <p class="res-eyebrow">五常能量評估結果</p>
+    <h2 class="res-name" id="res-name"></h2>
+    <p class="res-id" id="res-id"></p>
+    <div id="res-candle"></div>
+    <div class="edi-wrap">
+      <div class="edi-title">五常能量偏移矩陣</div>
+      <div id="edi-bars"></div>
+      <p style="font-size:10px;color:var(--text3);margin-top:16px;line-height:1.9;letter-spacing:0.04em;">
+        右偏 (+) → 能量亢進，需疏導沉降&nbsp;&nbsp;·&nbsp;&nbsp;左偏 (−) → 能量低沉，需滋補生發
+      </p>
+    </div>
+    <div class="res-actions">
+      <button class="btn-meditate" onclick="goMeditate()">前往調律音頻 →</button>
+      <button class="btn-redo" onclick="goAssess()">↺ 重新檢測</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MEDITATION ══ -->
+<div id="s-meditation" class="screen">
+  <nav class="top-nav">
+    <button class="nav-back" onclick="goHome()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M5 12l7-7M5 12l7 7"/></svg>
+      返回
+    </button>
+    <span class="nav-brand">燃道</span>
+    <span style="width:60px"></span>
+  </nav>
+  <div class="med-body">
+    <div class="med-header">
+      <p class="med-eyebrow">五常·煉系列 · 專屬音頻</p>
+      <h2 class="med-title">選擇調律</h2>
+      <p class="med-sub">點燃你的蠟燭<br>讓香氣與音頻帶你回到內在核心</p>
+    </div>
+
+    <div class="track-list">
+      <!-- WCL-01 木 仁 -->
+      <div class="track-card" style="--track-color:#4a7c4e" onclick="selectTrack(0)">
+        <div class="track-top">
+          <span class="track-name">仁 · 鬱而舒</span>
+          <span class="track-badge avail">可播放</span>
+        </div>
+        <div class="track-en">WCL-01 · 木 · 肝</div>
+        <div class="track-desc">疏通受阻的生命力，讓壓抑的能量化為破土的生機</div>
+      </div>
+      <!-- WCL-02 金 義 -->
+      <div class="track-card locked" style="--track-color:#4a6e8c" onclick="showLocked()">
+        <div class="track-top">
+          <span class="track-name">義 · 沉而決</span>
+          <span class="track-badge">即將上線</span>
+        </div>
+        <div class="track-en">WCL-02 · 金 · 肺</div>
+        <div class="track-desc">磨出靈魂的鋒芒，找回守護自身邊界的勇氣</div>
+      </div>
+      <!-- WCL-03 火 禮 -->
+      <div class="track-card locked" style="--track-color:#a84060" onclick="showLocked()">
+        <div class="track-top">
+          <span class="track-name">禮 · 亂而序</span>
+          <span class="track-badge">即將上線</span>
+        </div>
+        <div class="track-en">WCL-03 · 火 · 心</div>
+        <div class="track-desc">在喧囂中為心築起圍籬，讓散亂的神光重新安放</div>
+      </div>
+      <!-- WCL-04 水 智 -->
+      <div class="track-card locked" style="--track-color:#4a5a8c" onclick="showLocked()">
+        <div class="track-top">
+          <span class="track-name">智 · 潛而浮</span>
+          <span class="track-badge">即將上線</span>
+        </div>
+        <div class="track-en">WCL-04 · 水 · 腎</div>
+        <div class="track-desc">與最深處的恐懼握手言和，帶著透徹重新浮上水面</div>
+      </div>
+      <!-- WCL-05 土 信 -->
+      <div class="track-card locked" style="--track-color:#9b7340" onclick="showLocked()">
+        <div class="track-top">
+          <span class="track-name">信 · 思而定</span>
+          <span class="track-badge">即將上線</span>
+        </div>
+        <div class="track-en">WCL-05 · 土 · 脾</div>
+        <div class="track-desc">讓懸浮的思緒落回泥土，把憂慮交還給大地化作養分</div>
       </div>
     </div>
-  </div>
 
-  <div id="completion" class="page hidden">
-    <div class="done-wrap">
-      <p class="done-main serif">冥想累積一次</p>
-      <p class="done-sub">願此微光，照亮歸途</p>
-    </div>
-    <div class="comp-btns">
-      <button class="btn-dark" onclick="goHome()">回到首頁</button>
-      <button class="btn-gold" onclick="startMeditation()">再次冥想</button>
-    </div>
-  </div>
+    <!-- PLAYER -->
+    <div class="player-wrap" id="player-wrap" style="display:none">
+      <div class="player-track-name" id="pl-name">仁 · 鬱而舒</div>
+      <div class="player-track-sub" id="pl-sub">WCL-01 · 木 · 肝 · 五常·煉系列</div>
 
+      <!-- waveform viz -->
+      <div class="wave-viz" id="wave-viz"></div>
+
+      <!-- progress bar -->
+      <div class="player-prog-wrap" onclick="seekAudio(event)">
+        <div class="player-prog-track">
+          <div class="player-prog-fill" id="pl-prog" style="width:0%"></div>
+        </div>
+        <div class="player-times">
+          <span id="pl-cur">0:00</span>
+          <span id="pl-dur">--:--</span>
+        </div>
+      </div>
+
+      <!-- controls -->
+      <div class="player-controls">
+        <button class="btn-skip" onclick="skipAudio(-10)" title="後退10秒">
+          <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8zm-1.1 11H10v-3.26L9 13.02V12l1.85-.66h.05V16zm4.28-1.76c0 1.17-.37 1.86-1.3 1.86-.95 0-1.3-.68-1.3-1.86v-1.51c0-1.17.36-1.85 1.3-1.85.94 0 1.3.68 1.3 1.85v1.51zm-.82-1.6c0-.53-.08-.81-.48-.81-.4 0-.47.28-.47.81v1.7c0 .53.07.81.47.81.4 0 .48-.28.48-.81v-1.7z"/></svg>
+        </button>
+        <button class="btn-play paused" id="btn-play" onclick="togglePlay()">
+          <svg class="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          <svg class="icon-pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </button>
+        <button class="btn-skip" onclick="skipAudio(10)" title="前進10秒">
+          <svg viewBox="0 0 24 24"><path d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8zm-1.1 11H10v-3.26L9 13.02V12l1.85-.66h.05V16zm4.28-1.76c0 1.17-.37 1.86-1.3 1.86-.95 0-1.3-.68-1.3-1.86v-1.51c0-1.17.36-1.85 1.3-1.85.94 0 1.3.68 1.3 1.85v1.51zm-.82-1.6c0-.53-.08-.81-.48-.81-.4 0-.47.28-.47.81v1.7c0 .53.07.81.47.81.4 0 .48-.28.48-.81v-1.7z"/></svg>
+        </button>
+      </div>
+
+      <!-- volume -->
+      <div class="player-vol">
+        <div class="vol-icon"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg></div>
+        <input type="range" class="vol-slider" id="vol-slider" min="0" max="100" value="80" oninput="setVolume(this.value)">
+        <span class="vol-pct" id="vol-pct">80%</span>
+      </div>
+    </div>
+
+    <p class="coming-note">
+      目前開放 <span>仁 · 鬱而舒</span> 專屬音頻<br>
+      其餘四款音頻將陸續上線<br>
+      完整體驗請配合燃道蠟燭點燃使用
+    </p>
+
+    <audio id="audio-player" preload="metadata">
+      <source src="/audio/鬱而舒_專屬冥想音頻25mb.mp3" type="audio/mpeg">
+    </audio>
+  </div>
 </div>
 
 <script>
-  /* ── 邏輯調整：自動化時間同步 ── */
-  let TOTAL = 15 * 60; // 預設值，將被音檔實際長度覆蓋
-  const CIRC = 2 * Math.PI * 104;
+/* ─── DATA ─── */
+const questions=[
+  {id:1,element:'wood',tag:'情緒感知',text:'最近這週，當事情不如預期時，你通常的第一反應是？',options:[
+    {val:2,label:'胸口悶熱、很想爆發，但還是硬吞下去'},
+    {val:1,label:'心裡煩躁，比平常更沒耐心'},
+    {val:0,label:'還好，調整一下就能繼續走'},
+    {val:-1,label:'提不起勁，就讓事情停在那裡'},
+    {val:-2,label:'完全沒有情緒，像個旁觀者'}
+  ]},
+  {id:2,element:'wood',tag:'身體覺察',text:'描述你最近肩頸或眼睛的狀態，最接近哪一個？',options:[
+    {val:2,label:'肩頸像石頭，眼睛乾澀發酸，一直想揉'},
+    {val:1,label:'有一點緊，不自覺就聳肩或咬牙'},
+    {val:0,label:'還算放鬆，伸展一下就好多了'},
+    {val:-1,label:'四肢沉重，像背著什麼東西'},
+    {val:-2,label:'軟趴趴的，連眼神都有點渙散'}
+  ]},
+  {id:3,element:'fire',tag:'社交狀態',text:'結束一段聚會或視訊會議後，你最常有什麼感覺？',options:[
+    {val:2,label:'腦子還在轉、心跳快，靜不下來'},
+    {val:1,label:'很嗨但有點空洞，話好像說太多了'},
+    {val:0,label:'溫暖充實，覺得和人有真實連結'},
+    {val:-1,label:'很累，想立刻一個人待著'},
+    {val:-2,label:'什麼感覺都沒有，有點像關掉了'}
+  ]},
+  {id:4,element:'fire',tag:'睡眠品質',text:'最近的睡眠，你覺得最像哪種狀況？',options:[
+    {val:2,label:'凌晨會醒來，腦子還在想事情'},
+    {val:1,label:'夢很多很亂，醒來還是很累'},
+    {val:0,label:'入睡順，醒來覺得能量補回來了'},
+    {val:-1,label:'常常做不安的夢，醒來有點害怕'},
+    {val:-2,label:'睡很久還是累，像電沒有充進去'}
+  ]},
+  {id:5,element:'earth',tag:'飲食感受',text:'壓力大或情緒不好的時候，你對食物的反應是？',options:[
+    {val:2,label:'瘋狂想吃甜食或澱粉，吃到撐才安心'},
+    {val:1,label:'嘴巴停不下來，一直吃零食'},
+    {val:0,label:'正常吃，消化順暢，飯後神清氣爽'},
+    {val:-1,label:'完全沒胃口，看到食物覺得是負擔'},
+    {val:-2,label:'肚子悶重，整個人像被堵住一樣'}
+  ]},
+  {id:6,element:'earth',tag:'思考模式',text:'你的腦袋最近有多常在「反覆想同一件事」？',options:[
+    {val:2,label:'停不下來，一個念頭會滾出十個問題'},
+    {val:1,label:'常常鑽牛角尖，但還能拉回來'},
+    {val:0,label:'想完就放下，不太會卡在同一個點'},
+    {val:-1,label:'想法很多但動不了，卡在中間'},
+    {val:-2,label:'腦霧，什麼都想不清楚'}
+  ]},
+  {id:7,element:'metal',tag:'邊界感知',text:'別人拜託你幫忙，你很難拒絕——這句話符合你現在的狀態嗎？',options:[
+    {val:2,label:'我反而很容易說不，甚至偶爾太強硬'},
+    {val:1,label:'我很在意細節和秩序，容易因小事緊張'},
+    {val:0,label:'我清楚自己的邊界，能有彈性地應對'},
+    {val:-1,label:'很符合，我常常說好，但心裡不太甘願'},
+    {val:-2,label:'我乾脆不接任何事，想把自己關起來'}
+  ]},
+  {id:8,element:'metal',tag:'決策狀態',text:'最近你做決定的感覺是？',options:[
+    {val:2,label:'很果斷，但事後會懷疑自己太衝動'},
+    {val:1,label:'容易猶豫，反覆確認才放心'},
+    {val:0,label:'清晰，能分出輕重緩急'},
+    {val:-1,label:'拖很久，常常對自己感到失望'},
+    {val:-2,label:'根本不想做任何決定，能逃就逃'}
+  ]},
+  {id:9,element:'water',tag:'內在感受',text:'你有沒有一種說不清楚、莫名的不安全感或恐懼感？',options:[
+    {val:2,label:'有，但它讓我變得很緊繃、很警覺'},
+    {val:1,label:'有，我很容易被外界動靜干擾到'},
+    {val:0,label:'還好，就算不安我還是找得到自己的核心'},
+    {val:-1,label:'有，我想縮起來，不想被看見'},
+    {val:-2,label:'有，感覺身體已經不想再保護自己了'}
+  ]},
+  {id:10,element:'water',tag:'生命動能',text:'對於「明天要做什麼、想往哪裡去」，你現在的感覺是？',options:[
+    {val:2,label:'計畫很多，但焦慮感很強，怕跟不上'},
+    {val:1,label:'想很多，卻很難真正開始行動'},
+    {val:0,label:'清晰有節奏，知道何時前進、何時休息'},
+    {val:-1,label:'茫然，提不起勁，只想待在舒適圈'},
+    {val:-2,label:'放棄了，對未來沒有任何期待或想像'}
+  ]}
+];
 
-  let current  = 'home';
-  let timeLeft = TOTAL;
-  let timer    = null;
-  let paused   = false;
-  let count    = 0;
+const elData={
+  wood:{name:'仁 · 鬱而舒',id:'WCL-01',element:'木 · 肝',icon:'🌿',color:'#4a7c4e',
+    tagline:'為那些，把憤怒壓在肋骨裡的人而燃。',
+    symptoms:['說不出口的委屈','無由來的煩躁','眼睛乾澀緊繃','創造力枯竭','對他人失去耐心'],
+    scents:[
+      {phase:'初燃',desc:'溫暖果香微光，輕輕叩開你緊鎖的防備'},
+      {phase:'中調',desc:'玫瑰氣息的綠意草本，深沉木質向下紮根'},
+      {phase:'尾韻',desc:'樹脂甘甜，覆蓋所有疲憊的裂縫'}
+    ]},
+  metal:{name:'義 · 沉而決',id:'WCL-02',element:'金 · 肺',icon:'✦',color:'#4a6e8c',
+    tagline:'為那些，還在等待足夠勇氣說「不」的人而燃。',
+    symptoms:['無法拒絕他人','沉溺過去的遺憾','呼吸淺短胸悶','優柔寡斷','自我批判強烈'],
+    scents:[
+      {phase:'初燃',desc:'透亮清冽，讓積壓在肺葉的悲傷找到出口'},
+      {phase:'中調',desc:'冷靜草本清理舊傷，辛香微粒注入意志'},
+      {phase:'尾韻',desc:'土壤般的沉穩，看清值得守護的與可以放下的'}
+    ]},
+  fire:{name:'禮 · 亂而序',id:'WCL-03',element:'火 · 心',icon:'◈',color:'#a84060',
+    tagline:'為那些，思緒像燭火在風中搖曳的人而燃。',
+    symptoms:['無法入睡的夜晚','心悸與不明焦慮','資訊過載','社交後的精神耗竭','思緒停不下來'],
+    scents:[
+      {phase:'初燃',desc:'高潔花香，如溫柔的手遮住外界紛雜的噪音'},
+      {phase:'中調',desc:'紫藍色調撫平過度跳動的神經，溫潤木質花香'},
+      {phase:'尾韻',desc:'古老樹脂沉入底部，如定海神針讓身體慢下來'}
+    ]},
+  water:{name:'智 · 潛而浮',id:'WCL-04',element:'水 · 腎',icon:'◉',color:'#4a5a8c',
+    tagline:'為那些，在黑暗裡不知道自己還有多深的人而燃。',
+    symptoms:['深層的不明恐懼','腎上腺疲勞','意志力耗盡','腰膝痠軟無力','人生方向感迷失'],
+    scents:[
+      {phase:'初燃',desc:'清甜純淨帶著安全感，深邃藥草幽香包裹你'},
+      {phase:'中調',desc:'針葉香氣溫暖丹田，帶著甜感的微溫支撐內在'},
+      {phase:'尾韻',desc:'從深處浮現的透徹，帶著撈回的東西重新上岸'}
+    ]},
+  earth:{name:'信 · 思而定',id:'WCL-05',element:'土 · 脾',icon:'⬡',color:'#9b7340',
+    tagline:'為那些，把明天的重量帶進今晚的人而燃。',
+    symptoms:['反覆咀嚼同一件事','對未來充滿憂慮','消化系統不適','決策困難','深層的不安全感'],
+    scents:[
+      {phase:'初燃',desc:'葡萄柚清新切換頻道，馬鬱蘭令你停止無意義咀嚼'},
+      {phase:'中調',desc:'肉豆蔻與生薑的暖意直達核心，化開積聚的憂慮'},
+      {phase:'尾韻',desc:'岩蘭草與安息香交織成棉被，讓重量變成穩定'}
+    ]}
+};
 
-  const audio = document.getElementById('meditationAudio');
+const elOrder=['wood','fire','earth','metal','water'];
+const elColors={wood:'#4a7c4e',fire:'#a84060',earth:'#9b7340',metal:'#4a6e8c',water:'#4a5a8c'};
+const elLabel={wood:'仁 木',fire:'禮 火',earth:'信 土',metal:'義 金',water:'智 水'};
 
-  // 監聽音檔元數據載入
-  audio.addEventListener('loadedmetadata', () => {
-    TOTAL = Math.floor(audio.duration); // 自動抓取 15:09 (909秒)
-    timeLeft = TOTAL;
-    updateDisplay();
-    updateRing();
+/* ─── STATE ─── */
+let curQ=0,answers={};
+
+/* ─── SCREEN NAV ─── */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function goHome(){
+  pauseAudio();
+  showScreen('s-intro');
+}
+function goAssess(){
+  curQ=0;answers={};
+  showScreen('s-assessment');
+  renderDots();renderQ();
+}
+function goMeditate(){showScreen('s-meditation');}
+
+/* ─── QUIZ ─── */
+function renderDots(){
+  const c=document.getElementById('dots');
+  c.innerHTML='';
+  questions.forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='dot'+(i<curQ?' done':i===curQ?' cur':'');
+    c.appendChild(d);
   });
+}
+function renderQ(){
+  const q=questions[curQ];
+  const sel=answers[curQ];
+  document.getElementById('prog-count').textContent=`${curQ+1} / ${questions.length}`;
+  document.getElementById('prog-fill').style.width=`${((curQ+1)/questions.length)*100}%`;
+  document.getElementById('btn-prev').disabled=curQ===0;
+  document.getElementById('btn-next').disabled=sel===undefined;
+  document.getElementById('btn-next').textContent=curQ===questions.length-1?'查看結果 →':'下一題 →';
+  document.getElementById('q-area').innerHTML=`
+    <div class="q-card">
+      <div class="q-meta">
+        <span class="q-num">Q${String(curQ+1).padStart(2,'0')}</span>
+        <span class="q-tag">${q.tag}</span>
+      </div>
+      <div class="q-text">${q.text}</div>
+      <div class="opts">
+        ${q.options.map((o,i)=>`
+          <button class="opt${sel===o.val?' sel':''}" onclick="pickOpt(${o.val})">
+            <div class="opt-ltr">${String.fromCharCode(65+i)}</div>
+            <span>${o.label}</span>
+          </button>
+        `).join('')}
+      </div>
+    </div>`;
+  renderDots();
+}
+function pickOpt(val){
+  answers[curQ]=val;
+  document.querySelectorAll('.opt').forEach((b,i)=>{
+    b.classList.toggle('sel',questions[curQ].options[i].val===val);
+  });
+  document.getElementById('btn-next').disabled=false;
+}
+function nextQ(){curQ<questions.length-1?(curQ++,renderQ()):showResult();}
+function prevQ(){if(curQ>0){curQ--;renderQ();}}
 
-  /* ── 存儲與初始化 ── */
-  function loadCount() {
-    try { count = parseInt(localStorage.getItem('randao_count') || '0', 10) || 0; }
-    catch(e) { count = 0; }
-    document.getElementById('countLabel').textContent = count > 0
-      ? `您已在此燃道修行了 ${count} 次`
-      : '開始您的第一次修行';
+/* ─── SCORES ─── */
+function calcScores(){
+  const s={wood:0,fire:0,earth:0,metal:0,water:0};
+  const c={wood:0,fire:0,earth:0,metal:0,water:0};
+  questions.forEach((q,i)=>{
+    if(answers[i]!==undefined){s[q.element]+=answers[i];c[q.element]++;}
+  });
+  const avg={};
+  for(const k in s)avg[k]=c[k]>0?+(s[k]/c[k]).toFixed(2):0;
+  return avg;
+}
+
+/* ─── RESULT ─── */
+function showResult(){
+  const scores=calcScores();
+  let maxAbs=-1,core='wood';
+  for(const[k,v]of Object.entries(scores)){if(Math.abs(v)>maxAbs){maxAbs=Math.abs(v);core=k;}}
+  const el=elData[core];
+
+  document.getElementById('res-name').textContent=el.name;
+  document.getElementById('res-id').textContent=`${el.id} · ${el.element}`;
+
+  document.getElementById('res-candle').innerHTML=`
+    <div class="res-candle" style="--candle-color:${el.color}">
+      <div class="res-top">
+        <div class="res-icon">${el.icon}</div>
+        <div>
+          <div class="res-candle-id">${el.id} · ${el.element}</div>
+          <div class="res-candle-name">${el.name}</div>
+          <div class="res-tagline">${el.tagline}</div>
+        </div>
+      </div>
+      <div class="res-section">
+        <div class="res-sec-label">香調旅程</div>
+        <div class="scent-row">
+          ${el.scents.map(s=>`
+            <div class="scent-item">
+              <div class="scent-phase">${s.phase}</div>
+              <div class="scent-desc">${s.desc}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div class="res-section">
+        <div class="res-sec-label">你可能正在經歷</div>
+        <div class="sym-list">
+          ${el.symptoms.map(s=>`<span class="sym">${s}</span>`).join('')}
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('edi-bars').innerHTML=elOrder.map(k=>{
+    const sc=scores[k];
+    const pct=Math.abs(sc)/2*50;
+    const isPos=sc>=0;
+    const left=isPos?50:(50-pct);
+    const label=sc>0?`+${sc.toFixed(1)}`:sc.toFixed(1);
+    return`<div class="bar-row">
+      <div class="bar-lr">
+        <span class="bar-el">${elLabel[k]}</span>
+        <span class="bar-sc">${label}</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-mid"></div>
+        <div class="bar-fill" style="left:${left}%;width:${pct}%;background:${elColors[k]};opacity:0.75;"></div>
+      </div>
+      <div class="bar-ends"><span>低沉 −</span><span>+ 亢進</span></div>
+    </div>`;
+  }).join('');
+
+  showScreen('s-result');
+}
+
+/* ─── AUDIO PLAYER ─── */
+const audio=document.getElementById('audio-player');
+const tracks=[
+  {name:'仁 · 鬱而舒',sub:'WCL-01 · 木 · 肝 · 五常·煉系列',src:'/audio/鬱而舒_專屬冥想音頻25mb.mp3'}
+];
+let activeTrack=-1,waveInterval=null;
+
+/* build waveform bars */
+(function buildWave(){
+  const wrap=document.getElementById('wave-viz');
+  for(let i=0;i<40;i++){
+    const b=document.createElement('div');
+    b.className='wave-bar';
+    const h=Math.random()*70+15;
+    b.style.height=h+'%';
+    b.style.animationDelay=(Math.random()*0.8)+'s';
+    b.style.animationDuration=(0.7+Math.random()*0.6)+'s';
+    wrap.appendChild(b);
   }
+})();
 
-  function saveCount() {
-    try { localStorage.setItem('randao_count', String(count)); } catch(e) {}
-  }
+function selectTrack(idx){
+  document.querySelectorAll('.track-card').forEach((c,i)=>c.classList.toggle('active',i===idx));
+  const t=tracks[idx];
+  if(!t)return;
+  activeTrack=idx;
+  audio.src=t.src;
+  document.getElementById('pl-name').textContent=t.name;
+  document.getElementById('pl-sub').textContent=t.sub;
+  document.getElementById('player-wrap').style.display='block';
+  document.getElementById('pl-prog').style.width='0%';
+  document.getElementById('pl-cur').textContent='0:00';
+  document.getElementById('pl-dur').textContent='--:--';
+  audio.load();
+  audio.play().then(()=>setPlaying(true)).catch(()=>setPlaying(false));
+}
 
-  /* ── 導航 ── */
-  function goTo(page) {
-    const from = document.getElementById(current);
-    const to   = document.getElementById(page);
-    from.classList.remove('visible');
-    from.classList.add('hidden');
-    requestAnimationFrame(() => {
-      to.classList.remove('hidden');
-      requestAnimationFrame(() => to.classList.add('visible'));
-    });
-    current = page;
-    document.getElementById('rippleWrap').style.display = (page === 'meditation') ? 'block' : 'none';
-  }
+function togglePlay(){
+  if(audio.paused){audio.play().then(()=>setPlaying(true));}
+  else{audio.pause();setPlaying(false);}
+}
 
-  /* ── 冥想控制邏輯 ── */
-  function startMeditation() {
-    clearInterval(timer);
-    
-    // 確保以最新載入的音樂長度為準
-    if (!isNaN(audio.duration)) {
-      TOTAL = Math.floor(audio.duration);
-    }
-    
-    timeLeft = TOTAL;
-    paused = false;
-    document.getElementById('pauseBtn').textContent = '暫停冥想';
-    
-    // 播放音樂並同步倒數
-    audio.currentTime = 0;
-    audio.play().catch(e => console.log("播放被阻擋:", e));
+function setPlaying(playing){
+  const btn=document.getElementById('btn-play');
+  btn.className='btn-play '+(playing?'playing':'paused');
+  document.querySelectorAll('.wave-bar').forEach(b=>b.classList.toggle('playing',playing));
+}
 
-    updateDisplay();
-    updateRing();
-    goTo('meditation');
-    timer = setInterval(tick, 1000);
-  }
+function skipAudio(sec){
+  audio.currentTime=Math.max(0,Math.min(audio.duration||0,audio.currentTime+sec));
+}
 
-  function tick() {
-    if (paused) return;
-    timeLeft = Math.max(0, timeLeft - 1);
-    updateDisplay();
-    updateRing();
-    
-    if (timeLeft <= 0) {
-      clearInterval(timer);
-      audio.pause();
-      count++;
-      saveCount();
-      setTimeout(() => {
-        loadCount();
-        const c = document.getElementById('completion');
-        const clone = c.cloneNode(true);
-        c.parentNode.replaceChild(clone, c);
-        goTo('completion');
-      }, 500);
-    }
-  }
+function seekAudio(e){
+  if(!audio.duration)return;
+  const track=e.currentTarget;
+  const rect=track.getBoundingClientRect();
+  const ratio=(e.clientX-rect.left)/rect.width;
+  audio.currentTime=ratio*audio.duration;
+}
 
-  function updateDisplay() {
-    const m = String(Math.floor(timeLeft / 60)).padStart(2, '0');
-    const s = String(timeLeft % 60).padStart(2, '0');
-    document.getElementById('timerDisplay').textContent = `${m}:${s}`;
-  }
+function setVolume(v){
+  audio.volume=v/100;
+  document.getElementById('vol-pct').textContent=Math.round(v)+'%';
+}
 
-  function updateRing() {
-    const pct = timeLeft / TOTAL;
-    const offset = CIRC * (1 - pct);
-    document.getElementById('progressRing').setAttribute('stroke-dashoffset', offset.toFixed(2));
-  }
+function pauseAudio(){
+  audio.pause();setPlaying(false);
+}
 
-  function togglePause() {
-    paused = !paused;
-    document.getElementById('pauseBtn').textContent = paused ? '繼續冥想' : '暫停冥想';
-    if (paused) audio.pause(); else audio.play();
-  }
+function showLocked(){
+  /* subtle flash on locked cards — no alert */
+  const cards=document.querySelectorAll('.track-card.locked');
+  cards.forEach(c=>{
+    c.style.borderColor='rgba(200,169,110,0.2)';
+    setTimeout(()=>c.style.borderColor='',600);
+  });
+}
 
-  function showStopConfirm()  { document.getElementById('stopOverlay').classList.remove('hidden'); }
-  function hideStopConfirm()  { document.getElementById('stopOverlay').classList.add('hidden'); }
+function fmtTime(s){
+  if(isNaN(s))return'--:--';
+  const m=Math.floor(s/60),sec=Math.floor(s%60);
+  return`${m}:${String(sec).padStart(2,'0')}`;
+}
 
-  function confirmStop() {
-    clearInterval(timer);
-    audio.pause();
-    audio.currentTime = 0;
-    hideStopConfirm();
-    timeLeft = TOTAL;
-    paused = false;
-    updateDisplay();
-    updateRing();
-    goTo('selection');
-  }
+audio.addEventListener('timeupdate',()=>{
+  if(!audio.duration)return;
+  const pct=(audio.currentTime/audio.duration)*100;
+  document.getElementById('pl-prog').style.width=pct+'%';
+  document.getElementById('pl-cur').textContent=fmtTime(audio.currentTime);
+});
+audio.addEventListener('loadedmetadata',()=>{
+  document.getElementById('pl-dur').textContent=fmtTime(audio.duration);
+});
+audio.addEventListener('ended',()=>setPlaying(false));
+audio.addEventListener('play',()=>setPlaying(true));
+audio.addEventListener('pause',()=>setPlaying(false));
 
-  function goHome() {
-    clearInterval(timer);
-    audio.pause();
-    goTo('home');
-  }
-
-  loadCount();
+/* init volume */
+audio.volume=0.8;
 </script>
 </body>
 </html>
