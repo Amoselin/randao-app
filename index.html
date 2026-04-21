@@ -1,330 +1,24 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>燃道｜冥想</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --brand-bg: #f4eee8;
-    --brand-text: #1b1714;
-    --med-bg: #d2c7a9;
-    --med-primary: #2d3e2a;
-    --med-gold: #b3a04a;
-  }
-
-  html, body {
-    width: 100%; height: 100%; overflow: hidden;
-    font-family: 'Noto Sans TC', sans-serif;
-    background: var(--brand-bg);
-  }
-
-  #app {
-    width: 100%; height: 100vh;
-    position: relative; overflow: hidden;
-  }
-
-  /* ── Page base ── */
-  .page {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: 2.5rem;
-    transition: opacity 0.8s cubic-bezier(0.4,0,0.2,1),
-                transform 0.8s cubic-bezier(0.4,0,0.2,1);
-  }
-  .page.hidden   { opacity: 0; pointer-events: none; transform: translateY(24px); }
-  .page.visible  { opacity: 1; pointer-events: all;  transform: translateY(0); }
-
-  .serif { font-family: 'Noto Serif TC', Georgia, serif; }
-
-  /* ── HOME ── */
-  #home { background: var(--brand-bg); }
-
-  .breath-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    background: var(--brand-text); opacity: 0.35;
-    animation: breathe 4s ease-in-out infinite;
-    margin-bottom: 2.2rem;
-  }
-  @keyframes breathe {
-    0%, 100% { transform: scale(1);   opacity: 0.25; }
-    50%       { transform: scale(2.2); opacity: 0.65; }
-  }
-
-  .home-title {
-    font-size: clamp(18px, 4vw, 24px);
-    letter-spacing: 0.18em; color: var(--brand-text);
-    text-align: center; font-weight: 400; line-height: 2;
-    margin-bottom: 0.5rem;
-  }
-  .home-sub {
-    font-size: 13px; letter-spacing: 0.1em;
-    color: var(--brand-text); opacity: 0.5;
-    text-align: center; font-weight: 300;
-    font-style: italic; margin-bottom: 2.8rem;
-  }
-
-  /* ── Buttons ── */
-  .btn-outline {
-    border: 1px solid var(--brand-text); background: transparent;
-    color: var(--brand-text); padding: 11px 36px;
-    font-size: 13px; letter-spacing: 0.12em;
-    cursor: pointer; border-radius: 40px;
-    font-family: 'Noto Sans TC', sans-serif;
-    transition: background 0.3s, color 0.3s, transform 0.15s;
-  }
-  .btn-outline:hover  { background: var(--brand-text); color: var(--brand-bg); }
-  .btn-outline:active { transform: scale(0.96); }
-
-  .btn-gold {
-    border: 1px solid var(--med-gold); background: transparent;
-    color: var(--med-gold); padding: 11px 32px;
-    font-size: 13px; letter-spacing: 0.12em;
-    cursor: pointer; border-radius: 40px;
-    font-family: 'Noto Sans TC', sans-serif;
-    transition: background 0.3s, color 0.3s, transform 0.15s;
-  }
-  .btn-gold:hover  { background: var(--med-gold); color: #f4eee8; }
-  .btn-gold:active { transform: scale(0.96); }
-
-  .btn-dark {
-    border: 1px solid var(--med-primary); background: transparent;
-    color: var(--med-primary); padding: 11px 32px;
-    font-size: 13px; letter-spacing: 0.12em;
-    cursor: pointer; border-radius: 40px;
-    font-family: 'Noto Sans TC', sans-serif;
-    transition: background 0.3s, color 0.3s, transform 0.15s;
-  }
-  .btn-dark:hover  { background: var(--med-primary); color: var(--med-bg); }
-  .btn-dark:active { transform: scale(0.96); }
-
-  .btn-ghost {
-    border: none; background: transparent;
-    color: var(--med-primary); opacity: 0.45;
-    font-size: 12px; letter-spacing: 0.1em;
-    cursor: pointer; padding: 6px 16px;
-    font-family: 'Noto Sans TC', sans-serif;
-    transition: opacity 0.2s;
-  }
-  .btn-ghost:hover  { opacity: 0.85; }
-  .btn-ghost:active { transform: scale(0.96); }
-
-  .back-btn {
-    border: none; background: transparent;
-    color: var(--brand-text); opacity: 0.4;
-    font-size: 12px; letter-spacing: 0.08em;
-    cursor: pointer; padding: 6px;
-    font-family: 'Noto Sans TC', sans-serif;
-    transition: opacity 0.2s;
-  }
-  .back-btn:hover { opacity: 0.75; }
-
-  /* count label */
-  .count-label {
-    position: absolute; bottom: 1.8rem; left: 0; right: 0;
-    text-align: center; font-size: 11.5px;
-    color: var(--brand-text); opacity: 0.38;
-    letter-spacing: 0.06em;
-  }
-
-  /* ── SELECTION ── */
-  #selection { background: var(--brand-bg); }
-
-  .sel-hint {
-    font-size: 11px; letter-spacing: 0.22em;
-    color: var(--brand-text); opacity: 0.38;
-    margin-bottom: 2rem; font-weight: 300;
-  }
-
-  .card-select {
-    border: 1px solid rgba(27,23,20,0.18); border-radius: 18px;
-    padding: 2.8rem 3.5rem; cursor: pointer; text-align: center;
-    background: rgba(255,255,255,0.38);
-    transition: box-shadow 0.35s, transform 0.3s, background 0.3s;
-    margin-bottom: 2rem; max-width: 320px; width: 100%;
-  }
-  .card-select:hover {
-    box-shadow: 0 16px 48px rgba(27,23,20,0.1);
-    transform: translateY(-4px) scale(1.025);
-    background: rgba(255,255,255,0.65);
-  }
-  .card-select:active { transform: scale(0.98); }
-
-  .card-tag  { font-size: 10.5px; letter-spacing: 0.22em; color: var(--brand-text); opacity: 0.4; margin-bottom: 0.7rem; }
-  .card-name { font-size: 21px; letter-spacing: 0.14em; color: var(--med-primary); font-weight: 500; margin-bottom: 0.45rem; }
-  .card-sub  { font-size: 12px; color: var(--med-primary); opacity: 0.55; letter-spacing: 0.06em; }
-
-  /* ── MEDITATION ── */
-  #meditation { background: var(--med-bg); }
-
-  /* ripple bg */
-  .ripple-wrap {
-    position: absolute; inset: 0; pointer-events: none;
-    overflow: hidden; z-index: 0;
-  }
-  .ripple {
-    position: absolute; border-radius: 50%;
-    border: 1px solid rgba(45,62,42,0.1);
-    animation: rippleOut 9s ease-out infinite;
-  }
-  @keyframes rippleOut {
-    0%   { transform: scale(0.4); opacity: 0.55; }
-    100% { transform: scale(3.8); opacity: 0; }
-  }
-
-  #meditation > * { position: relative; z-index: 1; }
-
-  .med-label {
-    font-size: 11px; letter-spacing: 0.26em;
-    color: var(--med-primary); opacity: 0.52;
-    margin-bottom: 1.6rem; font-weight: 300;
-  }
-
-  .timer-wrap {
-    position: relative; width: 230px; height: 230px;
-    margin-bottom: 2.2rem;
-  }
-  .timer-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .timer-text {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 46px; color: var(--med-primary);
-    letter-spacing: 0.04em; font-weight: 300;
-  }
-
-  .med-btns {
-    display: flex; flex-direction: column;
-    align-items: center; gap: 0.8rem;
-  }
-
-  /* ── Stop confirm overlay ── */
-  .overlay {
-    position: absolute; inset: 0; z-index: 20;
-    background: rgba(210,199,169,0.9);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 1.8rem;
-    transition: opacity 0.4s; backdrop-filter: blur(2px);
-  }
-  .overlay.hidden { opacity: 0; pointer-events: none; }
-
-  .overlay-text {
-    font-size: 16px; color: var(--med-primary);
-    letter-spacing: 0.08em; text-align: center; line-height: 1.8;
-  }
-  .overlay-btns { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
-
-  /* ── COMPLETION ── */
-  #completion { background: var(--med-bg); }
-
-  .done-wrap { text-align: center; margin-bottom: 2.8rem; }
-  .done-main {
-    font-size: clamp(22px, 5vw, 30px);
-    color: var(--med-gold); letter-spacing: 0.18em;
-    animation: fadeUpGold 1.3s ease forwards;
-    line-height: 1.6;
-  }
-  .done-sub {
-    font-size: 13px; color: var(--med-primary); opacity: 0;
-    letter-spacing: 0.1em; margin-top: 0.6rem;
-    animation: fadeUpSub 1.3s ease 0.4s forwards;
-  }
-  @keyframes fadeUpGold {
-    from { opacity: 0; transform: translateY(22px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fadeUpSub {
-    from { opacity: 0; transform: translateY(14px); }
-    to   { opacity: 0.5; transform: translateY(0); }
-  }
-  .comp-btns { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
-</style>
-</head>
-<body>
-<div id="app">
-
-  <audio id="meditationAudio" src="鬱而舒_專屬冥想音頻25mb.mp3" preload="auto"></audio>
-
-  <div class="ripple-wrap" id="rippleWrap" style="display:none">
-    <div class="ripple" style="width:260px;height:260px;top:25%;left:25%;animation-delay:0s"></div>
-    <div class="ripple" style="width:200px;height:200px;top:30%;left:30%;animation-delay:3s"></div>
-    <div class="ripple" style="width:150px;height:150px;top:35%;left:35%;animation-delay:6s"></div>
-  </div>
-
-  <div id="home" class="page visible">
-    <div class="breath-dot"></div>
-    <h1 class="home-title serif">燃起微光，看見歸途</h1>
-    <p class="home-sub">A faint light kindled, the way back revealed.</p>
-    <button class="btn-outline" onclick="goTo('selection')">開始冥想</button>
-    <p class="count-label" id="countLabel"></p>
-  </div>
-
-  <div id="selection" class="page hidden">
-    <p class="sel-hint">選擇修行方式</p>
-    <div class="card-select" onclick="startMeditation()">
-      <p class="card-tag">五常·煉</p>
-      <p class="card-name serif">鬱而舒</p>
-      <p class="card-sub">15 分鐘沉浸冥想</p>
-    </div>
-    <button class="back-btn" onclick="goTo('home')">← 返回</button>
-  </div>
-
-  <div id="meditation" class="page hidden">
-    <p class="med-label">五常·煉｜鬱而舒</p>
-    <div class="timer-wrap">
-      <svg class="timer-svg" viewBox="0 0 230 230" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="115" cy="115" r="104"
-          fill="none" stroke="rgba(45,62,42,0.1)" stroke-width="2.5"/>
-        <circle id="progressRing" cx="115" cy="115" r="104"
-          fill="none" stroke="#b3a04a" stroke-width="2.5"
-          stroke-linecap="round"
-          stroke-dasharray="653.7" stroke-dashoffset="0"
-          transform="rotate(-90 115 115)"/>
-      </svg>
-      <div class="timer-text serif" id="timerDisplay">15:00</div>
-    </div>
-    <div class="med-btns">
-      <button class="btn-gold" id="pauseBtn" onclick="togglePause()">暫停冥想</button>
-      <button class="btn-ghost" onclick="showStopConfirm()">停止冥想</button>
-    </div>
-
-    <div class="overlay hidden" id="stopOverlay">
-      <p class="overlay-text serif">確定要停止此次修行？<br><span style="font-size:12px;opacity:0.6;letter-spacing:0.06em">時間將重置，累積不計入</span></p>
-      <div class="overlay-btns">
-        <button class="btn-gold" onclick="confirmStop()">確認停止</button>
-        <button class="btn-ghost" style="opacity:0.6;color:var(--med-primary)" onclick="hideStopConfirm()">繼續修行</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="completion" class="page hidden">
-    <div class="done-wrap">
-      <p class="done-main serif">冥想累積一次</p>
-      <p class="done-sub">願此微光，照亮歸途</p>
-    </div>
-    <div class="comp-btns">
-      <button class="btn-dark" onclick="goHome()">回到首頁</button>
-      <button class="btn-gold" onclick="startMeditation()">再次冥想</button>
-    </div>
-  </div>
-
-</div>
-
-<script>
-  const TOTAL = 15 * 60;   // 900 seconds
-  const CIRC  = 2 * Math.PI * 104;   // ≈ 653.7
+// 將 TOTAL 改為 let，初始值可設為預設，稍後會被自動覆蓋
+  let TOTAL = 15 * 60;   
+  const CIRC = 2 * Math.PI * 104; 
 
   let current  = 'home';
   let timeLeft = TOTAL;
   let timer    = null;
   let paused   = false;
   let count    = 0;
+
+  // 獲取音頻元素
+  const audio = document.getElementById('meditationAudio');
+
+  /* ── 自動化時間設定 ── */
+  // 當音檔資訊載入完成後，自動更新計時器總時間
+  audio.addEventListener('loadedmetadata', () => {
+    TOTAL = Math.floor(audio.duration); // 自動獲取音檔秒數 (例如 909 秒)
+    timeLeft = TOTAL;
+    updateDisplay(); // 更新介面顯示為 15:09
+    updateRing();    // 重置進度環
+  });
 
   /* ── Storage ── */
   function loadCount() {
@@ -346,13 +40,11 @@
     const to   = document.getElementById(page);
     from.classList.remove('visible');
     from.classList.add('hidden');
-    // slight delay so CSS transition has a starting frame
     requestAnimationFrame(() => {
       to.classList.remove('hidden');
       requestAnimationFrame(() => to.classList.add('visible'));
     });
     current = page;
-    // ripple bg
     document.getElementById('rippleWrap').style.display =
       page === 'meditation' ? 'block' : 'none';
   }
@@ -360,14 +52,19 @@
   /* ── Meditation ── */
   function startMeditation() {
     clearInterval(timer);
+    
+    // 每次開始都以音檔最新長度為準
+    if (!isNaN(audio.duration)) {
+      TOTAL = Math.floor(audio.duration);
+    }
+    
     timeLeft = TOTAL;
     paused   = false;
     document.getElementById('pauseBtn').textContent = '暫停冥想';
     
     // 播放音頻
-    const audio = document.getElementById('meditationAudio');
     audio.currentTime = 0;
-    audio.play().catch(e => console.error("音樂播放失敗，可能被瀏覽器阻擋:", e));
+    audio.play().catch(e => console.error("播放受阻:", e));
 
     updateDisplay();
     updateRing();
@@ -380,11 +77,9 @@
     timeLeft = Math.max(0, timeLeft - 1);
     updateDisplay();
     updateRing();
+    
     if (timeLeft <= 0) {
       clearInterval(timer);
-      
-      // 停止音頻
-      const audio = document.getElementById('meditationAudio');
       audio.pause();
       audio.currentTime = 0;
 
@@ -392,7 +87,6 @@
       saveCount();
       setTimeout(() => {
         loadCount();
-        // re-trigger completion animations by cloning node
         const c = document.getElementById('completion');
         const clone = c.cloneNode(true);
         c.parentNode.replaceChild(clone, c);
@@ -417,14 +111,7 @@
   function togglePause() {
     paused = !paused;
     document.getElementById('pauseBtn').textContent = paused ? '繼續冥想' : '暫停冥想';
-    
-    // 暫停/繼續音頻
-    const audio = document.getElementById('meditationAudio');
-    if (paused) {
-      audio.pause();
-    } else {
-      audio.play();
-    }
+    if (paused) { audio.pause(); } else { audio.play(); }
   }
 
   function showStopConfirm()  { document.getElementById('stopOverlay').classList.remove('hidden'); }
@@ -433,15 +120,11 @@
   function confirmStop() {
     clearInterval(timer);
     hideStopConfirm();
+    audio.pause();
+    audio.currentTime = 0;
     timeLeft = TOTAL;
     paused   = false;
     document.getElementById('pauseBtn').textContent = '暫停冥想';
-    
-    // 停止音頻
-    const audio = document.getElementById('meditationAudio');
-    audio.pause();
-    audio.currentTime = 0;
-
     updateDisplay();
     updateRing();
     goTo('selection');
@@ -449,19 +132,9 @@
 
   function goHome() {
     clearInterval(timer);
-    
-    // 確保音頻已停止
-    const audio = document.getElementById('meditationAudio');
-    if(audio) {
-      audio.pause();
-      audio.currentTime = 0;
-    }
-
+    audio.pause();
+    audio.currentTime = 0;
     goTo('home');
   }
 
-  /* ── Init ── */
   loadCount();
-</script>
-</body>
-</html>
