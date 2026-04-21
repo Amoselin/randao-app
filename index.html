@@ -249,14 +249,14 @@
 <body>
 <div id="app">
 
-  <!-- Ripple background (for meditation) -->
+  <audio id="meditationAudio" src="鬱而舒_專屬冥想音頻25mb.mp3" preload="auto"></audio>
+
   <div class="ripple-wrap" id="rippleWrap" style="display:none">
     <div class="ripple" style="width:260px;height:260px;top:25%;left:25%;animation-delay:0s"></div>
     <div class="ripple" style="width:200px;height:200px;top:30%;left:30%;animation-delay:3s"></div>
     <div class="ripple" style="width:150px;height:150px;top:35%;left:35%;animation-delay:6s"></div>
   </div>
 
-  <!-- ① HOME -->
   <div id="home" class="page visible">
     <div class="breath-dot"></div>
     <h1 class="home-title serif">燃起微光，看見歸途</h1>
@@ -265,7 +265,6 @@
     <p class="count-label" id="countLabel"></p>
   </div>
 
-  <!-- ② SELECTION -->
   <div id="selection" class="page hidden">
     <p class="sel-hint">選擇修行方式</p>
     <div class="card-select" onclick="startMeditation()">
@@ -276,15 +275,12 @@
     <button class="back-btn" onclick="goTo('home')">← 返回</button>
   </div>
 
-  <!-- ③ MEDITATION -->
   <div id="meditation" class="page hidden">
     <p class="med-label">五常·煉｜鬱而舒</p>
     <div class="timer-wrap">
       <svg class="timer-svg" viewBox="0 0 230 230" xmlns="http://www.w3.org/2000/svg">
-        <!-- track -->
         <circle cx="115" cy="115" r="104"
           fill="none" stroke="rgba(45,62,42,0.1)" stroke-width="2.5"/>
-        <!-- progress ring -->
         <circle id="progressRing" cx="115" cy="115" r="104"
           fill="none" stroke="#b3a04a" stroke-width="2.5"
           stroke-linecap="round"
@@ -298,7 +294,6 @@
       <button class="btn-ghost" onclick="showStopConfirm()">停止冥想</button>
     </div>
 
-    <!-- Stop confirm overlay -->
     <div class="overlay hidden" id="stopOverlay">
       <p class="overlay-text serif">確定要停止此次修行？<br><span style="font-size:12px;opacity:0.6;letter-spacing:0.06em">時間將重置，累積不計入</span></p>
       <div class="overlay-btns">
@@ -308,7 +303,6 @@
     </div>
   </div>
 
-  <!-- ④ COMPLETION -->
   <div id="completion" class="page hidden">
     <div class="done-wrap">
       <p class="done-main serif">冥想累積一次</p>
@@ -369,6 +363,12 @@
     timeLeft = TOTAL;
     paused   = false;
     document.getElementById('pauseBtn').textContent = '暫停冥想';
+    
+    // 播放音頻
+    const audio = document.getElementById('meditationAudio');
+    audio.currentTime = 0;
+    audio.play().catch(e => console.error("音樂播放失敗，可能被瀏覽器阻擋:", e));
+
     updateDisplay();
     updateRing();
     goTo('meditation');
@@ -382,6 +382,12 @@
     updateRing();
     if (timeLeft <= 0) {
       clearInterval(timer);
+      
+      // 停止音頻
+      const audio = document.getElementById('meditationAudio');
+      audio.pause();
+      audio.currentTime = 0;
+
       count++;
       saveCount();
       setTimeout(() => {
@@ -411,6 +417,14 @@
   function togglePause() {
     paused = !paused;
     document.getElementById('pauseBtn').textContent = paused ? '繼續冥想' : '暫停冥想';
+    
+    // 暫停/繼續音頻
+    const audio = document.getElementById('meditationAudio');
+    if (paused) {
+      audio.pause();
+    } else {
+      audio.play();
+    }
   }
 
   function showStopConfirm()  { document.getElementById('stopOverlay').classList.remove('hidden'); }
@@ -422,6 +436,12 @@
     timeLeft = TOTAL;
     paused   = false;
     document.getElementById('pauseBtn').textContent = '暫停冥想';
+    
+    // 停止音頻
+    const audio = document.getElementById('meditationAudio');
+    audio.pause();
+    audio.currentTime = 0;
+
     updateDisplay();
     updateRing();
     goTo('selection');
@@ -429,6 +449,14 @@
 
   function goHome() {
     clearInterval(timer);
+    
+    // 確保音頻已停止
+    const audio = document.getElementById('meditationAudio');
+    if(audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+
     goTo('home');
   }
 
